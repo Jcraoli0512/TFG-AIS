@@ -28,7 +28,8 @@ class User extends Authenticatable
         'facebook',
         'twitter',
         'role',
-        'is_active'
+        'is_active',
+        'google_id',
     ];
 
     /**
