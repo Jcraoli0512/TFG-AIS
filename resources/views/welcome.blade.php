@@ -8,6 +8,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <!-- Swiper CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css" />
+    <link rel="icon" type="image/png" href="{{ asset('img_web/logo.png') }}">
     <style>
         .swiper-button-next,
         .swiper-button-prev {
@@ -21,7 +22,9 @@
     <nav class="bg-white shadow-sm">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
             <div>
-                <img src="{{ asset('logo.png') }}" alt="Logo" class="w-10 h-10">
+                <a href="/">
+                    <img src="{{ asset('img_web/logo.png') }}" alt="Logo" class="w-16 h-16">
+                </a>
             </div>
             <div class="hidden md:flex space-x-6">
                 <a href="#" class="text-gray-700 hover:text-gray-900">Galerías</a>

@@ -4,47 +4,47 @@
 
         <!-- Name -->
         <div>
-            <x-input-label for="name" :value="__('Name')" class="text-sm font-medium text-gray-700 dark:text-gray-300" />
-            <x-text-input id="name" class="block mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 shadow-sm" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
+            <x-input-label for="name" :value="__('Nombre')" class="text-sm font-medium text-gray-700" />
+            <x-text-input id="name" class="block mt-1 w-full rounded-lg border-gray-300 bg-white text-gray-900 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" style="background-color: white;" />
             <x-input-error :messages="$errors->get('name')" class="mt-2" />
         </div>
 
         <!-- Email Address -->
         <div>
-            <x-input-label for="email" :value="__('Email')" class="text-sm font-medium text-gray-700 dark:text-gray-300" />
-            <x-text-input id="email" class="block mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 shadow-sm" type="email" name="email" :value="old('email')" required autocomplete="username" />
+            <x-input-label for="email" :value="__('Correo electrónico')" class="text-sm font-medium text-gray-700" />
+            <x-text-input id="email" class="block mt-1 w-full rounded-lg border-gray-300 bg-white text-gray-900 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm" type="email" name="email" :value="old('email')" required autocomplete="username" style="background-color: white;" />
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
         </div>
 
         <!-- Password -->
         <div>
-            <x-input-label for="password" :value="__('Password')" class="text-sm font-medium text-gray-700 dark:text-gray-300" />
-            <x-text-input id="password" class="block mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 shadow-sm" type="password" name="password" required autocomplete="new-password" />
+            <x-input-label for="password" :value="__('Contraseña')" class="text-sm font-medium text-gray-700" />
+            <x-text-input id="password" class="block mt-1 w-full rounded-lg border-gray-300 bg-white text-gray-900 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm" type="password" name="password" required autocomplete="new-password" style="background-color: white;" />
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
         </div>
 
         <!-- Confirm Password -->
         <div>
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" class="text-sm font-medium text-gray-700 dark:text-gray-300" />
-            <x-text-input id="password_confirmation" class="block mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 shadow-sm" type="password" name="password_confirmation" required autocomplete="new-password" />
+            <x-input-label for="password_confirmation" :value="__('Confirmar contraseña')" class="text-sm font-medium text-gray-700" />
+            <x-text-input id="password_confirmation" class="block mt-1 w-full rounded-lg border-gray-300 bg-white text-gray-900 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm" type="password" name="password_confirmation" required autocomplete="new-password" style="background-color: white;" />
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
         </div>
 
         <div class="space-y-4">
-            <x-primary-button class="w-full justify-center bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600">
-                {{ __('Register') }}
+            <x-primary-button class="w-full justify-center bg-indigo-600 hover:bg-indigo-700">
+                {{ __('Registrarse') }}
             </x-primary-button>
 
             <div class="relative">
                 <div class="absolute inset-0 flex items-center">
-                    <div class="w-full border-t border-gray-300 dark:border-gray-700"></div>
+                    <div class="w-full border-t border-gray-300"></div>
                 </div>
                 <div class="relative flex justify-center text-sm">
-                    <span class="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">O regístrate con</span>
+                    <span class="px-2 bg-white text-gray-500">O regístrate con</span>
                 </div>
             </div>
 
-            <a href="{{ route('auth.google') }}" class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
+            <a href="{{ route('auth.google') }}" class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                 <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24">
                     <path fill="currentColor" d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"/>
                 </svg>
@@ -52,10 +52,10 @@
             </a>
         </div>
 
-        <p class="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
-            {{ __('Already have an account?') }}
-            <a href="{{ route('login') }}" class="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300">
-                {{ __('Log in') }}
+        <p class="mt-4 text-center text-sm text-gray-600">
+            {{ __('¿Ya tienes una cuenta?') }}
+            <a href="{{ route('login') }}" class="font-medium text-indigo-600 hover:text-indigo-500">
+                {{ __('Iniciar sesión') }}
             </a>
         </p>
     </form>

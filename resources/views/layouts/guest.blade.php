@@ -13,13 +13,15 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+        <link rel="icon" type="image/png" href="{{ asset('img_web/logo.png') }}">
     </head>
     <body class="font-sans text-gray-900 antialiased">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white dark:bg-gray-800 shadow-xl overflow-hidden sm:rounded-2xl">
+        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0" style="background-image: url('{{ asset('img_web/bg-claro.png') }}'); background-size: cover; background-position: center;">
+            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-xl overflow-hidden sm:rounded-2xl">
                 <div class="mb-8 text-center">
-                    <a href="/" class="inline-block">
-                        <x-application-logo class="w-20 h-20 fill-current text-indigo-600 dark:text-indigo-400" />
+                    <a href="/">
+                        <img src="{{ asset('img_web/logo.png') }}" alt="Logo" class="w-32 h-32 mx-auto" />
                     </a>
                 </div>
 
