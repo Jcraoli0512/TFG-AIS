@@ -1,66 +1,8 @@
-<!DOCTYPE html>
-<html lang="es">
+@extends('layouts.app')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galería - Art Indie Space</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <!-- Three.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-</head>
+@section('title', 'Galería - Art Indie Space')
 
-<body class="bg-gray-50">
-    <!-- Barra de navegación -->
-    <nav class="bg-white shadow-sm">
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <div>
-                <img src="{{ asset('img_web/logo.png') }}" alt="Logo" class="w-16 h-16">
-            </div>
-            <div class="hidden md:flex space-x-6">
-                <a href="{{ route('gallery') }}" class="text-gray-700 hover:text-gray-900">Galerías</a>
-                <a href="#" class="text-gray-700 hover:text-gray-900">Calendario</a>
-                <a href="#" class="text-gray-700 hover:text-gray-900">Artistas</a>
-                <a href="#" class="text-gray-700 hover:text-gray-900">Géneros</a>
-                <a href="#" class="text-gray-700 hover:text-gray-900">Nosotros</a>
-            </div>
-            <div class="space-x-4">
-                @auth
-                    <div class="relative inline-block text-left">
-                        <button id="userMenuButton" type="button" class="flex items-center space-x-2 focus:outline-none">
-                            <img src="{{ Auth::user()->profile_photo_url }}" alt="Foto de perfil" class="w-10 h-10 rounded-full object-cover">
-                            <span class="text-gray-700">{{ Auth::user()->name }}</span>
-                        </button>
-                        <div id="userDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg z-50">
-                            <a href="{{ route('profile.show') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Ir a perfil</a>
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <button type="submit" class="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100">Cerrar sesión</button>
-                            </form>
-                        </div>
-                    </div>
-                    <script>
-                        document.addEventListener('DOMContentLoaded', function () {
-                            const userMenuButton = document.getElementById('userMenuButton');
-                            const userDropdown = document.getElementById('userDropdown');
-                            userMenuButton.onclick = function (event) {
-                                event.stopPropagation();
-                                userDropdown.classList.toggle('hidden');
-                            };
-                            document.addEventListener('click', function (event) {
-                                if (!userDropdown.classList.contains('hidden')) {
-                                    userDropdown.classList.add('hidden');
-                                }
-                            });
-                        });
-                    </script>
-                @endauth
-            </div>
-        </div>
-    </nav>
-
-    <!-- Contenido principal -->
+@section('content')
     <div class="container mx-auto px-4 py-12">
         <h1 class="text-4xl font-bold text-center mb-8">Galería de Arte 3D</h1>
         
@@ -72,14 +14,11 @@
             <p>Controles: W (adelante), S (atrás), A (izquierda), D (derecha). Haz clic para mirar alrededor.</p>
         </div>
     </div>
+@endsection
 
-    <!-- Footer -->
-    <footer class="bg-white border-t mt-12 py-6">
-        <div class="container mx-auto px-4 text-center text-gray-600">
-            © AIS Art Indie Space
-        </div>
-    </footer>
-
+@section('scripts')
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Configuración básica
@@ -87,11 +26,12 @@
             const scene = new THREE.Scene();
             const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
             const renderer = new THREE.WebGLRenderer({ antialias: true });
+            
             renderer.setSize(container.clientWidth, container.clientHeight);
             container.appendChild(renderer.domElement);
 
             // Variables para el movimiento
-            const moveSpeed = 0.15; // Aumentado para un movimiento más fluido
+            const moveSpeed = 0.15;
             const keys = {
                 w: false,
                 a: false,
@@ -322,22 +262,8 @@
 
                 renderer.render(scene, camera);
             }
+
             animate();
         });
     </script>
-
-    <style>
-        #gallery-container {
-            background-color: #ffffff;
-            border-radius: 0.5rem;
-            overflow: hidden;
-            cursor: pointer;
-        }
-        #gallery-container canvas {
-            width: 100%;
-            height: 100%;
-        }
-    </style>
-</body>
-
-</html> 
+@endsection 

@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use App\Http\Controllers\CalendarController;
 
 /*
 |--------------------------------------------------------------------------
@@ -47,6 +48,11 @@ Route::get('/profile/edit', function () {
 Route::get('/gallery', function () {
     return view('gallery');
 })->middleware(['auth'])->name('gallery');
+
+// Calendario
+Route::get('/calendar', [CalendarController::class, 'index'])->middleware(['auth'])->name('calendar');
+Route::get('/api/calendar-events', [CalendarController::class, 'getEvents'])->middleware(['auth']);
+Route::get('/api/gallery-images/{date}', [CalendarController::class, 'getGalleryImages'])->middleware(['auth']);
 
 /*
 |--------------------------------------------------------------------------

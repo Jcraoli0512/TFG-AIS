@@ -22,11 +22,12 @@
     <nav class="bg-white shadow-sm">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
             <div>
-                <a href="/">
+                <a href="{{ route('welcome') }}">
                     <img src="{{ asset('img_web/logo.png') }}" alt="Logo" class="w-16 h-16">
                 </a>
             </div>
             <div class="hidden md:flex space-x-6">
+                <a href="{{ route('welcome') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('welcome') ? 'font-bold' : '' }}">Inicio</a>
                 <a href="#" class="text-gray-700 hover:text-gray-900">Galerías</a>
                 <a href="#" class="text-gray-700 hover:text-gray-900">Calendario</a>
                 <a href="#" class="text-gray-700 hover:text-gray-900">Artistas</a>

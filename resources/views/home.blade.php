@@ -21,11 +21,14 @@
     <nav class="bg-white shadow-sm">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
             <div>
-                <img src="{{ asset('img_web/logo.png') }}" alt="Logo" class="w-16 h-16">
+                <a href="{{ route('home') }}">
+                    <img src="{{ asset('img_web/logo.png') }}" alt="Logo" class="w-16 h-16">
+                </a>
             </div>
             <div class="hidden md:flex space-x-6">
-                <a href="{{ route('gallery') }}" class="text-gray-700 hover:text-gray-900">Galerías</a>
-                <a href="#" class="text-gray-700 hover:text-gray-900">Calendario</a>
+                <a href="{{ route('home') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('home') ? 'font-bold' : '' }}">Inicio</a>
+                <a href="{{ route('gallery') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('gallery') ? 'font-bold' : '' }}">Galerías</a>
+                <a href="{{ route('calendar') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('calendar') ? 'font-bold' : '' }}">Calendario</a>
                 <a href="#" class="text-gray-700 hover:text-gray-900">Artistas</a>
                 <a href="#" class="text-gray-700 hover:text-gray-900">Géneros</a>
                 <a href="#" class="text-gray-700 hover:text-gray-900">Nosotros</a>
@@ -45,22 +48,9 @@
                             </form>
                         </div>
                     </div>
-                    <script>
-                        // Mostrar/ocultar menú desplegable
-                        document.addEventListener('DOMContentLoaded', function () {
-                            const userMenuButton = document.getElementById('userMenuButton');
-                            const userDropdown = document.getElementById('userDropdown');
-                            userMenuButton.onclick = function (event) {
-                                event.stopPropagation();
-                                userDropdown.classList.toggle('hidden');
-                            };
-                            document.addEventListener('click', function (event) {
-                                if (!userDropdown.classList.contains('hidden')) {
-                                    userDropdown.classList.add('hidden');
-                                }
-                            });
-                        });
-                    </script>
+                @else
+                    <a href="{{ route('login') }}" class="text-gray-700 hover:text-gray-900">Iniciar sesión</a>
+                    <a href="{{ route('register') }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Registrarse</a>
                 @endauth
             </div>
         </div>
@@ -122,6 +112,25 @@
                 delay: 3000,
                 disableOnInteraction: false,
             },
+        });
+
+        // Manejar el menú de usuario
+        document.addEventListener('DOMContentLoaded', function() {
+            const userMenuButton = document.getElementById('userMenuButton');
+            const userDropdown = document.getElementById('userDropdown');
+            
+            if (userMenuButton && userDropdown) {
+                userMenuButton.onclick = function(event) {
+                    event.stopPropagation();
+                    userDropdown.classList.toggle('hidden');
+                };
+                
+                document.addEventListener('click', function(event) {
+                    if (!userDropdown.classList.contains('hidden')) {
+                        userDropdown.classList.add('hidden');
+                    }
+                });
+            }
         });
     </script>
 </body>
