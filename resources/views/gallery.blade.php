@@ -99,11 +99,50 @@
                 d: false
             };
 
-            // Crear sala principal y pasillos
-            const wallMaterial = new THREE.MeshPhongMaterial({
-                color: 0xf3f4f6,
-                side: THREE.DoubleSide
+            // Materiales
+            const wallMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xF5F5DC,  // Beige
+                shininess: 0
             });
+            const floorMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x8B4513,  // Marrón
+                shininess: 0
+            });
+            const ceilingMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x000000,  // Negro
+                shininess: 0
+            });
+
+            // Crear geometrías
+            const wallGeometry = new THREE.BoxGeometry(1, 5, 1);
+            const floorGeometry = new THREE.PlaneGeometry(1, 1);
+            const ceilingGeometry = new THREE.PlaneGeometry(1, 1);
+
+            // Función para crear pared
+            function createWall(x, z, width, depth) {
+                const wall = new THREE.Mesh(wallGeometry, wallMaterial);
+                wall.position.set(x, 2.5, z);
+                wall.scale.set(width, 1, depth);
+                scene.add(wall);
+            }
+
+            // Función para crear suelo
+            function createFloor(x, z, width, depth) {
+                const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+                floor.rotation.x = -Math.PI / 2;
+                floor.position.set(x, 0, z);
+                floor.scale.set(width, 1, depth);
+                scene.add(floor);
+            }
+
+            // Función para crear techo
+            function createCeiling(x, z, width, depth) {
+                const ceiling = new THREE.Mesh(ceilingGeometry, ceilingMaterial);
+                ceiling.rotation.x = Math.PI / 2;
+                ceiling.position.set(x, 5, z);
+                ceiling.scale.set(width, 1, depth);
+                scene.add(ceiling);
+            }
 
             // Sala principal
             const mainRoomWidth = 20;
@@ -111,54 +150,31 @@
             const mainRoomDepth = 20;
             const wallThickness = 0.5;
 
-            // Paredes de la sala principal
-            const walls = [
-                // Pared frontal
-                { size: [mainRoomWidth, mainRoomHeight, wallThickness], position: [0, mainRoomHeight/2, -mainRoomDepth/2] },
-                // Pared trasera
-                { size: [mainRoomWidth, mainRoomHeight, wallThickness], position: [0, mainRoomHeight/2, mainRoomDepth/2] },
-                // Pared izquierda
-                { size: [wallThickness, mainRoomHeight, mainRoomDepth], position: [-mainRoomWidth/2, mainRoomHeight/2, 0] },
-                // Pared derecha
-                { size: [wallThickness, mainRoomHeight, mainRoomDepth], position: [mainRoomWidth/2, mainRoomHeight/2, 0] },
-                // Techo
-                { size: [mainRoomWidth, wallThickness, mainRoomDepth], position: [0, mainRoomHeight, 0] },
-                // Suelo
-                { size: [mainRoomWidth, wallThickness, mainRoomDepth], position: [0, 0, 0] }
-            ];
+            // Paredes
+            createWall(0, -mainRoomDepth/2, mainRoomWidth, 1); // Pared norte
+            createWall(0, mainRoomDepth/2, mainRoomWidth, 1);  // Pared sur
+            createWall(-mainRoomWidth/2, 0, 1, mainRoomDepth); // Pared oeste
+            createWall(mainRoomWidth/2, 0, 1, mainRoomDepth);  // Pared este
 
-            walls.forEach(wall => {
-                const geometry = new THREE.BoxGeometry(...wall.size);
-                const mesh = new THREE.Mesh(geometry, wallMaterial);
-                mesh.position.set(...wall.position);
-                scene.add(mesh);
-            });
+            // Suelo y techo
+            createFloor(0, 0, mainRoomWidth, mainRoomDepth);
+            createCeiling(0, 0, mainRoomWidth, mainRoomDepth);
 
-            // Pasillos
+            // Pasillo izquierdo
             const hallwayWidth = 4;
             const hallwayHeight = mainRoomHeight;
             const hallwayDepth = 10;
 
-            // Pasillo izquierdo
-            const leftHallway = [
-                { size: [hallwayWidth, hallwayHeight, wallThickness], position: [-mainRoomWidth/2 - hallwayWidth/2, hallwayHeight/2, -hallwayDepth/2] },
-                { size: [hallwayWidth, hallwayHeight, wallThickness], position: [-mainRoomWidth/2 - hallwayWidth/2, hallwayHeight/2, hallwayDepth/2] },
-                { size: [wallThickness, hallwayHeight, hallwayDepth], position: [-mainRoomWidth/2 - hallwayWidth, hallwayHeight/2, 0] }
-            ];
+            createWall(-mainRoomWidth/2 - hallwayWidth/2, 0, 1, hallwayDepth);
+            createWall(-mainRoomWidth/2 - hallwayWidth, 0, 1, hallwayDepth);
+            createFloor(-mainRoomWidth/2 - hallwayWidth/2, 0, hallwayWidth, hallwayDepth);
+            createCeiling(-mainRoomWidth/2 - hallwayWidth/2, 0, hallwayWidth, hallwayDepth);
 
             // Pasillo derecho
-            const rightHallway = [
-                { size: [hallwayWidth, hallwayHeight, wallThickness], position: [mainRoomWidth/2 + hallwayWidth/2, hallwayHeight/2, -hallwayDepth/2] },
-                { size: [hallwayWidth, hallwayHeight, wallThickness], position: [mainRoomWidth/2 + hallwayWidth/2, hallwayHeight/2, hallwayDepth/2] },
-                { size: [wallThickness, hallwayHeight, hallwayDepth], position: [mainRoomWidth/2 + hallwayWidth, hallwayHeight/2, 0] }
-            ];
-
-            [...leftHallway, ...rightHallway].forEach(wall => {
-                const geometry = new THREE.BoxGeometry(...wall.size);
-                const mesh = new THREE.Mesh(geometry, wallMaterial);
-                mesh.position.set(...wall.position);
-                scene.add(mesh);
-            });
+            createWall(mainRoomWidth/2 + hallwayWidth/2, 0, 1, hallwayDepth);
+            createWall(mainRoomWidth/2 + hallwayWidth, 0, 1, hallwayDepth);
+            createFloor(mainRoomWidth/2 + hallwayWidth/2, 0, hallwayWidth, hallwayDepth);
+            createCeiling(mainRoomWidth/2 + hallwayWidth/2, 0, hallwayWidth, hallwayDepth);
 
             // Añadir cuadros en las paredes
             const paintings = [
@@ -190,8 +206,7 @@
             });
 
             // Posicionar cámara
-            camera.position.set(0, 1.7, 0); // Altura de los ojos
-            camera.lookAt(0, 1.7, -1);
+            camera.position.set(0, 0, 0);
 
             // Iluminación
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
@@ -219,6 +234,35 @@
                 camera.aspect = container.clientWidth / container.clientHeight;
                 camera.updateProjectionMatrix();
                 renderer.setSize(container.clientWidth, container.clientHeight);
+            });
+
+            // Controles de ratón para mirar alrededor
+            let isPointerLocked = false;
+            const sensitivity = 0.001; // Reducida la sensibilidad
+            let pitchObject = new THREE.Object3D();
+            let yawObject = new THREE.Object3D();
+            yawObject.position.y = 1.7; // Altura de los ojos
+            yawObject.add(pitchObject);
+            scene.add(yawObject);
+
+            // Posicionar cámara
+            camera.position.set(0, 0, 0);
+            pitchObject.add(camera);
+
+            container.addEventListener('click', () => {
+                container.requestPointerLock();
+            });
+
+            document.addEventListener('pointerlockchange', () => {
+                isPointerLocked = document.pointerLockElement === container;
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isPointerLocked) {
+                    yawObject.rotation.y -= e.movementX * sensitivity;
+                    pitchObject.rotation.x -= e.movementY * sensitivity;
+                    pitchObject.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, pitchObject.rotation.x));
+                }
             });
 
             // Animación y movimiento
@@ -250,7 +294,7 @@
                     movement.addScaledVector(right, moveDirection.x);
 
                     // Verificar colisiones con las paredes
-                    const nextPosition = camera.position.clone().add(movement);
+                    const nextPosition = yawObject.position.clone().add(movement);
                     const roomBounds = {
                         x: mainRoomWidth/2 - 1,
                         z: mainRoomDepth/2 - 1,
@@ -261,38 +305,18 @@
                     if (Math.abs(nextPosition.x) < roomBounds.x || 
                         (nextPosition.x < -roomBounds.hallwayX && Math.abs(nextPosition.z) < roomBounds.hallwayZ) ||
                         (nextPosition.x > roomBounds.hallwayX && Math.abs(nextPosition.z) < roomBounds.hallwayZ)) {
-                        camera.position.x = nextPosition.x;
+                        yawObject.position.x = nextPosition.x;
                     }
 
                     if (Math.abs(nextPosition.z) < roomBounds.z || 
                         (Math.abs(nextPosition.x) > roomBounds.x && Math.abs(nextPosition.z) < roomBounds.hallwayZ)) {
-                        camera.position.z = nextPosition.z;
+                        yawObject.position.z = nextPosition.z;
                     }
                 }
 
                 renderer.render(scene, camera);
             }
             animate();
-
-            // Controles de ratón para mirar alrededor
-            let isPointerLocked = false;
-            const sensitivity = 0.002;
-
-            container.addEventListener('click', () => {
-                container.requestPointerLock();
-            });
-
-            document.addEventListener('pointerlockchange', () => {
-                isPointerLocked = document.pointerLockElement === container;
-            });
-
-            document.addEventListener('mousemove', (e) => {
-                if (isPointerLocked) {
-                    camera.rotation.y -= e.movementX * sensitivity;
-                    camera.rotation.x -= e.movementY * sensitivity;
-                    camera.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, camera.rotation.x));
-                }
-            });
         });
     </script>
 
