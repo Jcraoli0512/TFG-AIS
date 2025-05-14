@@ -27,11 +27,11 @@
             </div>
             <div class="hidden md:flex space-x-6">
                 <a href="{{ route('home') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('home') ? 'font-bold' : '' }}">Inicio</a>
-                <a href="{{ route('gallery') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('gallery') ? 'font-bold' : '' }}">Galerías</a>
-                <a href="{{ route('calendar') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('calendar') ? 'font-bold' : '' }}">Calendario</a>
-                <a href="#" class="text-gray-700 hover:text-gray-900">Artistas</a>
-                <a href="#" class="text-gray-700 hover:text-gray-900">Géneros</a>
-                <a href="#" class="text-gray-700 hover:text-gray-900">Nosotros</a>
+                <a href="{{ auth()->check() ? route('gallery') : route('login') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('gallery') ? 'font-bold' : '' }}">Galería</a>
+                <a href="{{ auth()->check() ? route('calendar') : route('login') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('calendar') ? 'font-bold' : '' }}">Calendario</a>
+                <a href="{{ auth()->check() ? '#' : route('login') }}" class="text-gray-700 hover:text-gray-900">Artistas</a>
+                <a href="{{ auth()->check() ? '#' : route('login') }}" class="text-gray-700 hover:text-gray-900">Géneros</a>
+                <a href="{{ auth()->check() ? '#' : route('login') }}" class="text-gray-700 hover:text-gray-900">Nosotros</a>
             </div>
             <div class="space-x-4">
                 @auth
@@ -94,8 +94,42 @@
 
     <!-- Footer -->
     <footer class="bg-white border-t mt-12 py-6">
-        <div class="container mx-auto px-4 text-center text-gray-600">
-            © AIS Art Indie Space
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="font-bold text-lg mb-4">Art Indie Space</h3>
+                    <p class="text-gray-600">Tu espacio para descubrir y compartir arte independiente.</p>
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg mb-4">Enlaces rápidos</h3>
+                    <ul class="space-y-2">
+                        <li><a href="{{ route('home') }}" class="text-gray-600 hover:text-gray-900">Inicio</a></li>
+                        <li><a href="{{ route('gallery') }}" class="text-gray-600 hover:text-gray-900">Galería</a></li>
+                        <li><a href="{{ route('calendar') }}" class="text-gray-600 hover:text-gray-900">Calendario</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-gray-900">Artistas</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-gray-900">Géneros</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg mb-4">Legal</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-600 hover:text-gray-900">Términos y condiciones</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-gray-900">Política de privacidad</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-gray-900">Cookies</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg mb-4">Contacto</h3>
+                    <ul class="space-y-2">
+                        <li class="text-gray-600">Email: info@artindiespace.com</li>
+                        <li class="text-gray-600">Teléfono: +34 123 456 789</li>
+                        <li class="text-gray-600">Dirección: Calle del Arte, 123</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="mt-8 pt-8 border-t text-center text-gray-600">
+                © {{ date('Y') }} Art Indie Space. Todos los derechos reservados.
+            </div>
         </div>
     </footer>
 

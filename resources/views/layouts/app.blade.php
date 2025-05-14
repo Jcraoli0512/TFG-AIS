@@ -18,11 +18,11 @@
                 </div>
                 <div class="hidden md:flex space-x-6">
                     <a href="{{ route('dashboard') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('dashboard') ? 'font-bold' : '' }}">Inicio</a>
-                    <a href="{{ route('gallery') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('gallery') ? 'font-bold' : '' }}">Galerías</a>
-                    <a href="{{ route('calendar') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('calendar') ? 'font-bold' : '' }}">Calendario</a>
-                    <a href="#" class="text-gray-700 hover:text-gray-900">Artistas</a>
-                    <a href="#" class="text-gray-700 hover:text-gray-900">Géneros</a>
-                    <a href="#" class="text-gray-700 hover:text-gray-900">Nosotros</a>
+                    <a href="{{ auth()->check() ? route('gallery') : route('login') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('gallery') ? 'font-bold' : '' }}">Galería</a>
+                    <a href="{{ auth()->check() ? route('calendar') : route('login') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('calendar') ? 'font-bold' : '' }}">Calendario</a>
+                    <a href="{{ auth()->check() ? '#' : route('login') }}" class="text-gray-700 hover:text-gray-900">Artistas</a>
+                    <a href="{{ auth()->check() ? '#' : route('login') }}" class="text-gray-700 hover:text-gray-900">Géneros</a>
+                    <a href="{{ auth()->check() ? '#' : route('login') }}" class="text-gray-700 hover:text-gray-900">Nosotros</a>
                 </div>
                 <div class="space-x-4">
                     @auth
@@ -64,10 +64,10 @@
                         <h3 class="font-bold text-lg mb-4">Enlaces rápidos</h3>
                         <ul class="space-y-2">
                             <li><a href="{{ route('dashboard') }}" class="text-gray-600 hover:text-gray-900">Inicio</a></li>
-                            <li><a href="{{ route('gallery') }}" class="text-gray-600 hover:text-gray-900">Galerías</a></li>
-                            <li><a href="{{ route('calendar') }}" class="text-gray-600 hover:text-gray-900">Calendario</a></li>
-                            <li><a href="#" class="text-gray-600 hover:text-gray-900">Artistas</a></li>
-                            <li><a href="#" class="text-gray-600 hover:text-gray-900">Géneros</a></li>
+                            <li><a href="{{ auth()->check() ? route('gallery') : route('login') }}" class="text-gray-600 hover:text-gray-900">Galería</a></li>
+                            <li><a href="{{ auth()->check() ? route('calendar') : route('login') }}" class="text-gray-600 hover:text-gray-900">Calendario</a></li>
+                            <li><a href="{{ auth()->check() ? '#' : route('login') }}" class="text-gray-600 hover:text-gray-900">Artistas</a></li>
+                            <li><a href="{{ auth()->check() ? '#' : route('login') }}" class="text-gray-600 hover:text-gray-900">Géneros</a></li>
                         </ul>
                     </div>
                     <div>
