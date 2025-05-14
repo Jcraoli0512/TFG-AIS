@@ -43,6 +43,11 @@ Route::get('/profile/edit', function () {
     return view('profile-edit', compact('user'));
 })->middleware('auth')->name('profile.edit');
 
+// Galería de imágenes
+Route::get('/gallery', function () {
+    return view('gallery');
+})->middleware(['auth'])->name('gallery');
+
 /*
 |--------------------------------------------------------------------------
 | Cierre de sesión

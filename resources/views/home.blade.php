@@ -24,7 +24,7 @@
                 <img src="{{ asset('img_web/logo.png') }}" alt="Logo" class="w-16 h-16">
             </div>
             <div class="hidden md:flex space-x-6">
-                <a href="#" class="text-gray-700 hover:text-gray-900">Galerías</a>
+                <a href="{{ route('gallery') }}" class="text-gray-700 hover:text-gray-900">Galerías</a>
                 <a href="#" class="text-gray-700 hover:text-gray-900">Calendario</a>
                 <a href="#" class="text-gray-700 hover:text-gray-900">Artistas</a>
                 <a href="#" class="text-gray-700 hover:text-gray-900">Géneros</a>
