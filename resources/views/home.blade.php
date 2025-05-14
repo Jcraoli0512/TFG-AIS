@@ -21,7 +21,7 @@
     <nav class="bg-white shadow-sm">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
             <div>
-                <img src="{{ asset('logo.png') }}" alt="Logo" class="w-10 h-10">
+                <img src="{{ asset('img_web/logo.png') }}" alt="Logo" class="w-16 h-16">
             </div>
             <div class="hidden md:flex space-x-6">
                 <a href="#" class="text-gray-700 hover:text-gray-900">Galerías</a>
@@ -34,7 +34,7 @@
                 @auth
                     <div class="relative inline-block text-left">
                         <button id="userMenuButton" type="button" class="flex items-center space-x-2 focus:outline-none">
-                            <img src="{{ Auth::user()->profile_photo_url ?? asset('default-profile.png') }}" alt="Foto de perfil" class="w-10 h-10 rounded-full object-cover">
+                            <img src="{{ Auth::user()->profile_photo_url }}" alt="Foto de perfil" class="w-10 h-10 rounded-full object-cover">
                             <span class="text-gray-700">{{ Auth::user()->name }}</span>
                         </button>
                         <div id="userDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg z-50">

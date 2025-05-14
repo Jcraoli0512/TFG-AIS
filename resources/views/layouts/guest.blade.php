@@ -21,7 +21,7 @@
             <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-xl overflow-hidden sm:rounded-2xl">
                 <div class="mb-8 text-center">
                     <a href="/">
-                        <img src="{{ asset('img_web/logo.png') }}" alt="Logo" class="w-32 h-32 mx-auto" />
+                        <img src="{{ asset('img_web/logo.png') }}" alt="Logo" class="w-16 h-16 mx-auto" />
                     </a>
                 </div>
 
