@@ -179,25 +179,31 @@
             // Añadir cuadros en las paredes
             const paintings = [
                 // Sala principal
-                { position: [0, mainRoomHeight/2, -mainRoomDepth/2 + 0.1], rotation: [0, 0, 0], size: [3, 4], image: 'https://picsum.photos/400/500' },
-                { position: [0, mainRoomHeight/2, mainRoomDepth/2 - 0.1], rotation: [0, Math.PI, 0], size: [3, 4], image: 'https://picsum.photos/401/500' },
-                { position: [-mainRoomWidth/2 + 0.1, mainRoomHeight/2, 0], rotation: [0, Math.PI/2, 0], size: [3, 4], image: 'https://picsum.photos/402/500' },
-                { position: [mainRoomWidth/2 - 0.1, mainRoomHeight/2, 0], rotation: [0, -Math.PI/2, 0], size: [3, 4], image: 'https://picsum.photos/403/500' },
+                { position: [0, mainRoomHeight/2, -mainRoomDepth/2 + 0.5], rotation: [0, 0, 0], size: [3, 4], image: 'https://picsum.photos/400/500' },
+                { position: [0, mainRoomHeight/2, mainRoomDepth/2 - 0.5], rotation: [0, Math.PI, 0], size: [3, 4], image: 'https://picsum.photos/401/500' },
+                { position: [-mainRoomWidth/2 + 0.5, mainRoomHeight/2, 0], rotation: [0, Math.PI/2, 0], size: [3, 4], image: 'https://picsum.photos/402/500' },
+                { position: [mainRoomWidth/2 - 0.5, mainRoomHeight/2, 0], rotation: [0, -Math.PI/2, 0], size: [3, 4], image: 'https://picsum.photos/403/500' },
                 
                 // Pasillo izquierdo
-                { position: [-mainRoomWidth/2 - hallwayWidth/2, hallwayHeight/2, -hallwayDepth/2 + 0.1], rotation: [0, 0, 0], size: [2, 3], image: 'https://picsum.photos/404/500' },
-                { position: [-mainRoomWidth/2 - hallwayWidth/2, hallwayHeight/2, hallwayDepth/2 - 0.1], rotation: [0, Math.PI, 0], size: [2, 3], image: 'https://picsum.photos/405/500' },
-                { position: [-mainRoomWidth/2 - hallwayWidth + 0.1, hallwayHeight/2, 0], rotation: [0, Math.PI/2, 0], size: [2, 3], image: 'https://picsum.photos/406/500' },
+                { position: [-mainRoomWidth/2 - hallwayWidth/2, hallwayHeight/2, -hallwayDepth/2 + 0.5], rotation: [0, 0, 0], size: [2, 3], image: 'https://picsum.photos/404/500' },
+                { position: [-mainRoomWidth/2 - hallwayWidth/2, hallwayHeight/2, hallwayDepth/2 - 0.5], rotation: [0, Math.PI, 0], size: [2, 3], image: 'https://picsum.photos/405/500' },
+                { position: [-mainRoomWidth/2 - hallwayWidth + 0.5, hallwayHeight/2, 0], rotation: [0, Math.PI/2, 0], size: [2, 3], image: 'https://picsum.photos/406/500' },
                 
                 // Pasillo derecho
-                { position: [mainRoomWidth/2 + hallwayWidth/2, hallwayHeight/2, -hallwayDepth/2 + 0.1], rotation: [0, 0, 0], size: [2, 3], image: 'https://picsum.photos/407/500' },
-                { position: [mainRoomWidth/2 + hallwayWidth/2, hallwayHeight/2, hallwayDepth/2 - 0.1], rotation: [0, Math.PI, 0], size: [2, 3], image: 'https://picsum.photos/408/500' },
-                { position: [mainRoomWidth/2 + hallwayWidth - 0.1, hallwayHeight/2, 0], rotation: [0, -Math.PI/2, 0], size: [2, 3], image: 'https://picsum.photos/409/500' }
+                { position: [mainRoomWidth/2 + hallwayWidth/2, hallwayHeight/2, -hallwayDepth/2 + 0.5], rotation: [0, 0, 0], size: [2, 3], image: 'https://picsum.photos/407/500' },
+                { position: [mainRoomWidth/2 + hallwayWidth/2, hallwayHeight/2, hallwayDepth/2 - 0.5], rotation: [0, Math.PI, 0], size: [2, 3], image: 'https://picsum.photos/408/500' },
+                { position: [mainRoomWidth/2 + hallwayWidth - 0.5, hallwayHeight/2, 0], rotation: [0, -Math.PI/2, 0], size: [2, 3], image: 'https://picsum.photos/409/500' }
             ];
 
             paintings.forEach(painting => {
                 const texture = new THREE.TextureLoader().load(painting.image);
-                const material = new THREE.MeshPhongMaterial({ map: texture });
+                texture.minFilter = THREE.LinearFilter;
+                texture.magFilter = THREE.LinearFilter;
+                const material = new THREE.MeshPhongMaterial({ 
+                    map: texture,
+                    side: THREE.DoubleSide,
+                    transparent: true
+                });
                 const geometry = new THREE.PlaneGeometry(...painting.size);
                 const mesh = new THREE.Mesh(geometry, material);
                 mesh.position.set(...painting.position);
@@ -206,7 +212,8 @@
             });
 
             // Posicionar cámara
-            camera.position.set(0, 0, 0);
+            camera.position.set(0, 1.7, 0);
+            camera.lookAt(0, 1.7, -1);
 
             // Iluminación
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
@@ -238,14 +245,13 @@
 
             // Controles de ratón para mirar alrededor
             let isPointerLocked = false;
-            const sensitivity = 0.001; // Reducida la sensibilidad
+            const sensitivity = 0.002;
             let pitchObject = new THREE.Object3D();
             let yawObject = new THREE.Object3D();
-            yawObject.position.y = 1.7; // Altura de los ojos
+            yawObject.position.y = 1.7;
             yawObject.add(pitchObject);
             scene.add(yawObject);
 
-            // Posicionar cámara
             camera.position.set(0, 0, 0);
             pitchObject.add(camera);
 
