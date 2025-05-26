@@ -90,6 +90,12 @@
                     {{ __('Profile') }}
                 </x-responsive-nav-link>
 
+                @if(Auth::user()->isAdmin())
+                    <x-responsive-nav-link :href="route('admin.dashboard')">
+                        {{ __('Panel de Administración') }}
+                    </x-responsive-nav-link>
+                @endif
+
                 <!-- Authentication -->
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf

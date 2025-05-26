@@ -54,6 +54,25 @@ Route::get('/calendar', [CalendarController::class, 'index'])->middleware(['auth
 Route::get('/api/calendar-events', [CalendarController::class, 'getEvents'])->middleware(['auth']);
 Route::get('/api/gallery-images/{date}', [CalendarController::class, 'getGalleryImages'])->middleware(['auth']);
 
+// Exhibición 3D
+Route::get('/exhibicion', function () {
+    return view('exhibicion');
+})->middleware(['auth'])->name('exhibicion');
+
+/*
+|--------------------------------------------------------------------------
+| Rutas de administración
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/users', [App\Http\Controllers\Admin\DashboardController::class, 'users'])->name('users.index');
+    Route::get('/users/{user}/edit', [App\Http\Controllers\Admin\DashboardController::class, 'editUser'])->name('users.edit');
+    Route::put('/users/{user}', [App\Http\Controllers\Admin\DashboardController::class, 'updateUser'])->name('users.update');
+    Route::delete('/users/{user}', [App\Http\Controllers\Admin\DashboardController::class, 'deleteUser'])->name('users.delete');
+});
+
 /*
 |--------------------------------------------------------------------------
 | Cierre de sesión

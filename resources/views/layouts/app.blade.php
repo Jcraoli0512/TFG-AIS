@@ -3,8 +3,17 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>@yield('title') - Art Indie Space</title>
+        <title>@yield('title', 'Art Indie Space')</title>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <!-- Swiper CSS -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css" />
+        <link rel="icon" type="image/png" href="{{ asset('img_web/logo.png') }}">
+        <style>
+            .swiper-button-next,
+            .swiper-button-prev {
+                color: black !important;
+            }
+        </style>
         @yield('styles')
     </head>
     <body class="bg-gray-50 min-h-screen flex flex-col">
@@ -18,10 +27,10 @@
                 </div>
                 <div class="hidden md:flex space-x-6">
                     <a href="{{ route('dashboard') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('dashboard') ? 'font-bold' : '' }}">Inicio</a>
-                    <a href="{{ auth()->check() ? route('gallery') : route('login') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('gallery') ? 'font-bold' : '' }}">Galería</a>
+                    <a href="{{ auth()->check() ? route('exhibicion') : route('login') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('exhibicion') ? 'font-bold' : '' }}">Exhibición</a>
+                    <a href="#" class="text-gray-700 hover:text-gray-900">Galería</a>
                     <a href="{{ auth()->check() ? route('calendar') : route('login') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('calendar') ? 'font-bold' : '' }}">Calendario</a>
                     <a href="{{ auth()->check() ? '#' : route('login') }}" class="text-gray-700 hover:text-gray-900">Artistas</a>
-                    <a href="{{ auth()->check() ? '#' : route('login') }}" class="text-gray-700 hover:text-gray-900">Géneros</a>
                     <a href="{{ auth()->check() ? '#' : route('login') }}" class="text-gray-700 hover:text-gray-900">Nosotros</a>
                 </div>
                 <div class="space-x-4">
@@ -33,6 +42,9 @@
                             </button>
                             <div id="userDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg z-50">
                                 <a href="{{ route('profile.show') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Ir a perfil</a>
+                                @if(Auth::user()->isAdmin())
+                                    <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Panel de Administración</a>
+                                 @endif
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
                                     <button type="submit" class="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100">Cerrar sesión</button>
@@ -64,10 +76,11 @@
                         <h3 class="font-bold text-lg mb-4">Enlaces rápidos</h3>
                         <ul class="space-y-2">
                             <li><a href="{{ route('dashboard') }}" class="text-gray-600 hover:text-gray-900">Inicio</a></li>
-                            <li><a href="{{ auth()->check() ? route('gallery') : route('login') }}" class="text-gray-600 hover:text-gray-900">Galería</a></li>
+                            <li><a href="{{ auth()->check() ? route('exhibicion') : route('login') }}" class="text-gray-600 hover:text-gray-900">Exhibición</a></li>
+                            <li><a href="#" class="text-gray-600 hover:text-gray-900">Galería</a></li>
                             <li><a href="{{ auth()->check() ? route('calendar') : route('login') }}" class="text-gray-600 hover:text-gray-900">Calendario</a></li>
-                            <li><a href="{{ auth()->check() ? '#' : route('login') }}" class="text-gray-600 hover:text-gray-900">Artistas</a></li>
-                            <li><a href="{{ auth()->check() ? '#' : route('login') }}" class="text-gray-600 hover:text-gray-900">Géneros</a></li>
+                            <li><a href="#" class="text-gray-600 hover:text-gray-900">Artistas</a></li>
+                            <li><a href="#" class="text-gray-600 hover:text-gray-900">Nosotros</a></li>
                         </ul>
                     </div>
                     <div>
@@ -93,8 +106,21 @@
             </div>
         </footer>
 
-        <!-- Scripts -->
+        <!-- Swiper JS -->
+        <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
         <script>
+            var swiper = new Swiper(".mySwiper", {
+                navigation: {
+                    nextEl: ".swiper-button-next",
+                    prevEl: ".swiper-button-prev",
+                },
+                loop: true,
+                autoplay: {
+                    delay: 3000,
+                    disableOnInteraction: false,
+                },
+            });
+
             // Manejar el menú de usuario
             document.addEventListener('DOMContentLoaded', function() {
                 const userMenuButton = document.getElementById('userMenuButton');

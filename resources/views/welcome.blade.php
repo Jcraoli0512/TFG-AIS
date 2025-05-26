@@ -31,7 +31,6 @@
                 <a href="{{ route('login') }}" class="text-gray-700 hover:text-gray-900">Galería</a>
                 <a href="{{ route('login') }}" class="text-gray-700 hover:text-gray-900">Calendario</a>
                 <a href="{{ route('login') }}" class="text-gray-700 hover:text-gray-900">Artistas</a>
-                <a href="{{ route('login') }}" class="text-gray-700 hover:text-gray-900">Géneros</a>
                 <a href="{{ route('login') }}" class="text-gray-700 hover:text-gray-900">Nosotros</a>
             </div>
             <div class="space-x-4">
@@ -94,7 +93,7 @@
                         <li><a href="{{ route('login') }}" class="text-gray-600 hover:text-gray-900">Galería</a></li>
                         <li><a href="{{ route('login') }}" class="text-gray-600 hover:text-gray-900">Calendario</a></li>
                         <li><a href="{{ route('login') }}" class="text-gray-600 hover:text-gray-900">Artistas</a></li>
-                        <li><a href="{{ route('login') }}" class="text-gray-600 hover:text-gray-900">Géneros</a></li>
+                        <li><a href="{{ route('login') }}" class="text-gray-600 hover:text-gray-900">Nosotros</a></li>
                     </ul>
                 </div>
                 <div>
