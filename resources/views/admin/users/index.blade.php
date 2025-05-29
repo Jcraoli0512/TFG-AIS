@@ -3,9 +3,9 @@
 @section('title', 'Gestión de Usuarios')
 
 @section('header')
-    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-        {{ __('Gestión de Usuarios') }}
-    </h2>
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                {{ __('Gestión de Usuarios') }}
+            </h2>
 @endsection
 
 @section('content')
@@ -32,25 +32,25 @@
                                 <input type="text" name="search" value="{{ request('search') }}" 
                                     placeholder="Buscar por nombre o email..." 
                                     class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                            </div>
+                                            </div>
                             <div>
                                 <select name="role" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                     <option value="">Todos los roles</option>
                                     <option value="admin" {{ request('role') === 'admin' ? 'selected' : '' }}>Administrador</option>
                                     <option value="artist" {{ request('role') === 'artist' ? 'selected' : '' }}>Artista</option>
                                 </select>
-                            </div>
+                                            </div>
                             <div>
                                 <select name="status" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                     <option value="">Todos los estados</option>
                                     <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>Activos</option>
                                     <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>Inactivos</option>
                                 </select>
-                            </div>
+                                        </div>
                             <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
                                 Buscar
-                            </button>
-                        </form>
+                                                </button>
+                                            </form>
                     </div>
 
                     {{-- User list table --}}
