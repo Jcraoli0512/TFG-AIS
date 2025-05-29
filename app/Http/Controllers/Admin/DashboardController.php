@@ -24,14 +24,54 @@ class DashboardController extends Controller
         ));
     }
 
+    /**
+     * Display a listing of the users.
+     */
     public function users(): View
     {
-        $users = User::latest()->paginate(10);
+        $query = User::query();
+
+        // Search by name or email
+        if (request('search')) {
+            $search = request('search');
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by role
+        if (request('role')) {
+            $query->where('role', request('role'));
+        }
+
+        // Filter by status
+        if (request('status') !== null) {
+            $query->where('is_active', request('status'));
+        }
+
+        $users = $query->latest()->paginate(10)->withQueryString();
+
+        // Return the full view
         return view('admin.users.index', compact('users'));
     }
 
-    public function editUser(User $user): View
+    /**
+     * Show the form for editing the specified user.
+     *
+     * @param  \App\Models\User  $user
+     * @return \Illuminate\View\View|\Illuminate\Http\JsonResponse
+     */
+    public function editUser(User $user, Request $request)
     {
+        if ($request->ajax()) {
+            // If it's an AJAX request, return only the form partial
+            return response()->json([
+                'html' => view('admin.users._edit_form', compact('user'))->render()
+            ]);
+        }
+
+        // If it's a regular request, return the full page view (this might become obsolete)
         return view('admin.users.edit', compact('user'));
     }
 
