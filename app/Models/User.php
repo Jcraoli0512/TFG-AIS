@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class User extends Authenticatable
 {
@@ -70,7 +71,13 @@ class User extends Authenticatable
 
     public function isAdmin()
     {
-        return $this->role === 'admin';
+        Log::info('User::isAdmin', [
+            'id' => $this->id,
+            'email' => $this->email,
+            'role' => $this->role,
+            'is_active' => $this->is_active
+        ]);
+        return $this->role === 'admin' && $this->is_active;
     }
 
     public function getProfilePhotoUrlAttribute()

@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Log;
 
 class AdminMiddleware
 {
@@ -15,10 +16,27 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!$request->user() || !$request->user()->isAdmin()) {
-            return redirect()->route('home')->with('error', 'No tienes permisos para acceder a esta sección.');
+        Log::info('AdminMiddleware: Verificando acceso');
+        
+        if (!auth()->check()) {
+            Log::info('AdminMiddleware: Usuario no autenticado');
+            return redirect()->route('login')->with('error', 'Debes iniciar sesión para acceder a esta sección.');
         }
 
+        $user = auth()->user();
+        Log::info('AdminMiddleware: Usuario autenticado', [
+            'id' => $user->id,
+            'email' => $user->email,
+            'role' => $user->role,
+            'is_active' => $user->is_active
+        ]);
+
+        if (!$user->isAdmin()) {
+            Log::info('AdminMiddleware: Usuario no es admin');
+            return redirect()->route('home')->with('error', 'No tienes permisos para acceder al panel de administración.');
+        }
+
+        Log::info('AdminMiddleware: Acceso permitido');
         return $next($request);
     }
 } 

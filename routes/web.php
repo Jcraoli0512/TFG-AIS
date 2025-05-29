@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Http\Controllers\CalendarController;
+use App\Http\Controllers\Admin\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -65,12 +66,12 @@ Route::get('/exhibicion', function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/users', [App\Http\Controllers\Admin\DashboardController::class, 'users'])->name('users.index');
-    Route::get('/users/{user}/edit', [App\Http\Controllers\Admin\DashboardController::class, 'editUser'])->name('users.edit');
-    Route::put('/users/{user}', [App\Http\Controllers\Admin\DashboardController::class, 'updateUser'])->name('users.update');
-    Route::delete('/users/{user}', [App\Http\Controllers\Admin\DashboardController::class, 'deleteUser'])->name('users.delete');
+Route::group(['middleware' => ['web', 'auth', \App\Http\Middleware\AdminMiddleware::class], 'prefix' => 'admin', 'as' => 'admin.'], function () {
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/users', [DashboardController::class, 'users'])->name('users.index');
+    Route::get('/users/{user}/edit', [DashboardController::class, 'editUser'])->name('users.edit');
+    Route::put('/users/{user}', [DashboardController::class, 'updateUser'])->name('users.update');
+    Route::delete('/users/{user}', [DashboardController::class, 'deleteUser'])->name('users.delete');
 });
 
 /*
