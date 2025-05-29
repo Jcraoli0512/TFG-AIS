@@ -42,12 +42,25 @@
     </div>
 @endsection
 
-@section('scripts')
+@push('scripts')
     <!-- FullCalendar JS -->
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'>
+        console.log('FullCalendar JS loaded via CDN'); // Debug: Check if CDN script loads
+    </script>
     <script>
+        console.log('Calendar script loaded'); // Debug: Check if calendar script block loads
+
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('Calendar DOM fully loaded'); // Debug: Check if DOMContentLoaded fires
+
             const calendarEl = document.getElementById('calendar');
+            console.log('Calendar element:', calendarEl); // Debug: Check if calendar element is found
+
+            if (!calendarEl) {
+                console.error('Error: Calendar element not found!');
+                return; // Stop execution if element is not found
+            }
+
             const calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
                 locale: 'es',
@@ -98,6 +111,7 @@
                 }
             });
             calendar.render();
+            console.log('FullCalendar rendered'); // Debug: Check if render is called
         });
 
         function showEventModal(event) {
@@ -136,4 +150,4 @@
             }
         });
     </script>
-@endsection 
+@endpush 

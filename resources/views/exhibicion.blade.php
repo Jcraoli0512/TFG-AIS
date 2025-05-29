@@ -6,6 +6,8 @@
     <div class="container mx-auto px-4 py-12">
         <h1 class="text-4xl font-bold text-center mb-8">Galería de Arte 3D</h1>
         
+        <script>console.log('Content section loaded');</script>
+
         <div id="gallery-container" class="w-full h-[600px] relative bg-white rounded-lg shadow-lg overflow-hidden">
             <!-- El canvas de Three.js se insertará aquí -->
         </div>
@@ -16,13 +18,24 @@
     </div>
 @endsection
 
-@section('scripts')
+@push('scripts')
     <!-- Three.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
+        console.log('Exhibicion script loaded'); // Debug: Check if script loads
+
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM fully loaded'); // Debug: Check if DOMContentLoaded fires
+
             // Configuración básica
             const container = document.getElementById('gallery-container');
+            console.log('Gallery container element:', container); // Debug: Check if container is found
+
+            if (!container) {
+                console.error('Error: Gallery container element not found!');
+                return; // Stop execution if container is not found
+            }
+            
             const scene = new THREE.Scene();
             const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
             const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -266,4 +279,4 @@
             animate();
         });
     </script>
-@endsection 
+@endpush 

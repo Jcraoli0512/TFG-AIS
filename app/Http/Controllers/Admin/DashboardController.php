@@ -27,13 +27,13 @@ class DashboardController extends Controller
     /**
      * Display a listing of the users.
      */
-    public function users(): View
+    public function users(Request $request)
     {
         $query = User::query();
 
         // Search by name or email
-        if (request('search')) {
-            $search = request('search');
+        if ($request->has('search')) {
+            $search = $request->input('search');
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%");
@@ -41,18 +41,28 @@ class DashboardController extends Controller
         }
 
         // Filter by role
-        if (request('role')) {
-            $query->where('role', request('role'));
+        if ($request->has('role')) {
+             if (!empty($request->input('role'))) {
+                 $query->where('role', $request->input('role'));
+             }
         }
 
         // Filter by status
-        if (request('status') !== null) {
-            $query->where('is_active', request('status'));
+        if ($request->has('status') && $request->input('status') !== null) {
+            if (!empty($request->input('status')) || $request->input('status') === '0') { // Allow '0' for inactive
+                 $query->where('is_active', $request->input('status'));
+            }
         }
 
         $users = $query->latest()->paginate(10)->withQueryString();
 
-        // Return the full view
+        if ($request->ajax()) {
+            return response()->json([
+                'html' => view('admin.users._users_table', compact('users'))->render()
+            ]);
+        }
+
+        // Return the full view for non-AJAX requests
         return view('admin.users.index', compact('users'));
     }
 
