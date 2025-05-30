@@ -5,6 +5,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\ArtworkDisplayDateController;
+use App\Http\Controllers\ArtworkController;
+use App\Http\Controllers\ProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,17 +36,23 @@ Route::get('/dashboard', function () {
     return redirect('/home');
 })->middleware('auth')->name('dashboard');
 
-// Perfil de usuario
-Route::get('/profile', function () {
-    $user = Auth::user();
-    return view('profile', compact('user'));
-})->middleware('auth')->name('profile.show');
+// Rutas de perfil
+Route::middleware(['auth'])->group(function () {
+    // Ruta base de perfil
+    Route::get('/profile', function () {
+        return redirect()->route('profile.show', ['user' => auth()->id()]);
+    })->name('profile');
 
-// (Opcional) Edición de perfil, si la necesitas
-Route::get('/profile/edit', function () {
-    $user = Auth::user();
-    return view('profile-edit', compact('user'));
-})->middleware('auth')->name('profile.edit');
+    // Edición de perfil
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Ver perfil de usuario específico
+    Route::get('/profile/{user}', function (App\Models\User $user) {
+        return view('profile', compact('user'));
+    })->name('profile.show');
+});
 
 // Galería de imágenes
 Route::get('/gallery', function () {
@@ -54,6 +63,18 @@ Route::get('/gallery', function () {
 Route::get('/calendar', [CalendarController::class, 'index'])->middleware(['auth'])->name('calendar');
 Route::get('/api/calendar-events', [CalendarController::class, 'getEvents'])->middleware(['auth']);
 Route::get('/api/gallery-images/{date}', [CalendarController::class, 'getGalleryImages'])->middleware(['auth']);
+
+// Rutas para la gestión de fechas de exhibición de obras
+Route::middleware(['auth'])->group(function () {
+    Route::post('/api/artwork-display-dates', [ArtworkDisplayDateController::class, 'store'])->name('artwork-display-dates.store');
+    Route::delete('/api/artwork-display-dates/{displayDate}', [ArtworkDisplayDateController::class, 'destroy'])->name('artwork-display-dates.destroy');
+    Route::post('/api/artwork-display-dates/{displayDate}/approve', [ArtworkDisplayDateController::class, 'approve'])
+        ->middleware(['admin'])
+        ->name('artwork-display-dates.approve');
+});
+
+// Rutas para la gestión de obras (CRUD)
+Route::resource('artworks', ArtworkController::class)->middleware(['auth']);
 
 // Exhibición 3D
 Route::get('/exhibicion', function () {

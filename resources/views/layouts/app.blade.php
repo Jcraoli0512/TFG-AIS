@@ -3,6 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
         <title>@yield('title', 'Art Indie Space')</title>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         <!-- Swiper CSS -->
@@ -19,42 +20,47 @@
     <body class="bg-gray-50 min-h-screen flex flex-col">
         <!-- Barra de navegación -->
         <nav class="bg-white shadow-sm">
-            <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-                <div>
-                    <a href="{{ route('dashboard') }}">
-                        <img src="{{ asset('img_web/logo.png') }}" alt="Logo" class="w-16 h-16">
+            <div class="container mx-auto px-4">
+                <div class="flex justify-between items-center h-16">
+                    <!-- Logo -->
+                    <a href="{{ route('dashboard') }}" class="flex items-center">
+                        <img src="{{ asset('img_web/logo.png') }}" alt="Logo" class="w-10 h-10">
                     </a>
-                </div>
-                <div class="hidden md:flex space-x-6">
-                    <a href="{{ route('dashboard') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('dashboard') ? 'font-bold' : '' }}">Inicio</a>
-                    <a href="{{ auth()->check() ? route('exhibicion') : route('login') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('exhibicion') ? 'font-bold' : '' }}">Exhibición</a>
-                    <a href="#" class="text-gray-700 hover:text-gray-900">Galería</a>
-                    <a href="{{ auth()->check() ? route('calendar') : route('login') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('calendar') ? 'font-bold' : '' }}">Calendario</a>
-                    <a href="{{ auth()->check() ? '#' : route('login') }}" class="text-gray-700 hover:text-gray-900">Artistas</a>
-                    <a href="{{ auth()->check() ? '#' : route('login') }}" class="text-gray-700 hover:text-gray-900">Nosotros</a>
-                </div>
-                <div class="space-x-4">
-                    @auth
-                        <div class="relative inline-block text-left">
-                            <button id="userMenuButton" type="button" class="flex items-center space-x-2 focus:outline-none">
-                                <img src="{{ Auth::user()->profile_photo_url }}" alt="Foto de perfil" class="w-10 h-10 rounded-full object-cover">
-                                <span class="text-gray-700">{{ Auth::user()->name }}</span>
-                            </button>
-                            <div id="userDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg z-50">
-                                <a href="{{ route('profile.show') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Ir a perfil</a>
-                                @if(Auth::user()->isAdmin())
-                                    <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Panel de Administración</a>
-                                 @endif
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button type="submit" class="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100">Cerrar sesión</button>
-                                </form>
+
+                    <!-- Menú de navegación -->
+                    <div class="hidden md:flex items-center space-x-6">
+                        <a href="{{ route('dashboard') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('dashboard') ? 'font-semibold' : '' }}">Inicio</a>
+                        <a href="{{ auth()->check() ? route('exhibicion') : route('login') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('exhibicion') ? 'font-semibold' : '' }}">Exhibición</a>
+                        <a href="#" class="text-gray-700 hover:text-gray-900">Galería</a>
+                        <a href="{{ auth()->check() ? route('calendar') : route('login') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('calendar') ? 'font-semibold' : '' }}">Calendario</a>
+                        <a href="{{ auth()->check() ? '#' : route('login') }}" class="text-gray-700 hover:text-gray-900">Artistas</a>
+                        <a href="{{ auth()->check() ? '#' : route('login') }}" class="text-gray-700 hover:text-gray-900">Nosotros</a>
+                    </div>
+
+                    <!-- Menú de usuario -->
+                    <div class="flex items-center space-x-4">
+                        @auth
+                            <div class="relative">
+                                <button id="userMenuButton" type="button" class="flex items-center space-x-2 focus:outline-none">
+                                    <img src="{{ Auth::user()->profile_photo_url }}" alt="Foto de perfil" class="w-8 h-8 rounded-full object-cover">
+                                    <span class="text-gray-700">{{ Auth::user()->name }}</span>
+                                </button>
+                                <div id="userDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                                    <a href="{{ route('profile.show', ['user' => Auth::user()->id]) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Ir a perfil</a>
+                                    @if(Auth::user()->isAdmin())
+                                        <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Panel de Administración</a>
+                                    @endif
+                                    <form method="POST" action="{{ route('logout') }}">
+                                        @csrf
+                                        <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Cerrar sesión</button>
+                                    </form>
+                                </div>
                             </div>
-                        </div>
-                    @else
-                        <a href="{{ route('login') }}" class="text-gray-700 hover:text-gray-900">Iniciar sesión</a>
-                        <a href="{{ route('register') }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Registrarse</a>
-                    @endauth
+                        @else
+                            <a href="{{ route('login') }}" class="text-gray-700 hover:text-gray-900">Iniciar sesión</a>
+                            <a href="{{ route('register') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">Registrarse</a>
+                        @endauth
+                    </div>
                 </div>
             </div>
         </nav>
@@ -106,21 +112,8 @@
             </div>
         </footer>
 
-        <!-- Swiper JS -->
-        <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
+        <!-- Scripts -->
         <script>
-            var swiper = new Swiper(".mySwiper", {
-                navigation: {
-                    nextEl: ".swiper-button-next",
-                    prevEl: ".swiper-button-prev",
-                },
-                loop: true,
-                autoplay: {
-                    delay: 3000,
-                    disableOnInteraction: false,
-                },
-            });
-
             // Manejar el menú de usuario
             document.addEventListener('DOMContentLoaded', function() {
                 const userMenuButton = document.getElementById('userMenuButton');
@@ -141,5 +134,7 @@
             });
         </script>
         @stack('scripts')
+         <!-- Swiper JS -->
+         <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
     </body>
 </html>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Artwork;
 use App\Models\Exhibition;
+use App\Models\ArtworkDisplayDate;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -21,16 +22,34 @@ class CalendarController extends Controller
             ->get()
             ->map(function ($exhibition) {
                 return [
-                    'id' => $exhibition->id,
+                    'id' => 'exhibition_' . $exhibition->id,
                     'title' => $exhibition->title,
                     'start' => $exhibition->start_date,
                     'end' => $exhibition->end_date,
-                    'url' => '#', // Por ahora no redirigimos a ninguna página
-                    'description' => $exhibition->description
+                    'url' => '#',
+                    'description' => $exhibition->description,
+                    'type' => 'exhibition'
                 ];
             });
 
-        return response()->json($exhibitions);
+        // Obtener fechas de exhibición de obras
+        $artworkDates = ArtworkDisplayDate::where('is_approved', true)
+            ->with(['artwork', 'user'])
+            ->get()
+            ->map(function ($displayDate) {
+                return [
+                    'id' => 'artwork_' . $displayDate->id,
+                    'title' => $displayDate->artwork->title,
+                    'start' => $displayDate->display_date,
+                    'end' => $displayDate->display_date,
+                    'url' => '#',
+                    'description' => $displayDate->artwork->description,
+                    'type' => 'artwork',
+                    'artist' => $displayDate->user->name
+                ];
+            });
+
+        return response()->json($exhibitions->concat($artworkDates));
     }
 
     public function getGalleryImages($date)
@@ -38,14 +57,23 @@ class CalendarController extends Controller
         $date = Carbon::parse($date);
         
         // Obtener las obras que están en exhibición en la fecha seleccionada
-        $artworks = Artwork::whereHas('exhibitions', function ($query) use ($date) {
+        $exhibitionArtworks = Artwork::whereHas('exhibitions', function ($query) use ($date) {
             $query->where('is_public', true)
                   ->where('status', 'approved')
                   ->where('start_date', '<=', $date)
                   ->where('end_date', '>=', $date);
         })->with('user')->get();
 
-        $images = $artworks->map(function ($artwork) {
+        // Obtener las obras seleccionadas para esta fecha
+        $selectedArtworks = Artwork::whereHas('displayDates', function ($query) use ($date) {
+            $query->where('display_date', $date)
+                  ->where('is_approved', true);
+        })->with('user')->get();
+
+        // Combinar ambas colecciones
+        $allArtworks = $exhibitionArtworks->concat($selectedArtworks);
+
+        $images = $allArtworks->map(function ($artwork) {
             return [
                 'id' => $artwork->id,
                 'title' => $artwork->title,

@@ -7,6 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -14,9 +15,17 @@ class ProfileController extends Controller
     /**
      * Display the user's profile form.
      */
-    public function edit(Request $request): View
+    public function edit(Request $request)
     {
-        return view('profile.edit', [
+        Log::info('ProfileController@edit called', [
+            'isAjax' => $request->ajax(),
+            'url' => $request->url(),
+            'method' => $request->method(),
+            'user' => $request->user() ? $request->user()->id : 'not authenticated'
+        ]);
+
+        // Siempre devuelve la vista parcial
+        return view('profile._edit_form_partial', [
             'user' => $request->user(),
         ]);
     }

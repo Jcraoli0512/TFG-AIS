@@ -8,36 +8,67 @@
 @endsection
 
 @section('content')
-    <div class="container mx-auto px-4 py-12">
-        <h1 class="text-4xl font-bold text-center mb-8">Calendario de Exposiciones</h1>
-        
-        <!-- Calendario -->
-        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
-            <div id="calendar"></div>
-        </div>
-
-        <!-- Galería de imágenes del día seleccionado -->
-        <div id="selected-date-gallery" class="hidden">
-            <h2 class="text-2xl font-bold mb-4">Imágenes del día seleccionado</h2>
-            <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
-                <!-- Las imágenes se cargarán dinámicamente aquí -->
-            </div>
-        </div>
-
-        <!-- Modal para mostrar detalles del evento -->
-        <div id="eventModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-            <div class="bg-white rounded-lg p-6 max-w-2xl w-full mx-4">
-                <div class="flex justify-between items-start mb-4">
-                    <h3 id="eventTitle" class="text-xl font-bold"></h3>
-                    <button onclick="closeEventModal()" class="text-gray-500 hover:text-gray-700">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
+    <div class="container mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Calendario -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div id="calendar"></div>
                 </div>
-                <div id="eventDescription" class="text-gray-600 mb-4"></div>
-                <div id="eventDates" class="text-sm text-gray-500"></div>
             </div>
+
+            <!-- Panel lateral -->
+            <div class="lg:col-span-1">
+                <!-- Galería de imágenes -->
+                <div class="bg-white rounded-lg shadow p-6 mb-6">
+                    <h2 class="text-xl font-semibold mb-4">Galería del día</h2>
+                    <div id="gallery" class="grid grid-cols-1 gap-4">
+                        <!-- Las imágenes se cargarán aquí dinámicamente -->
+                    </div>
+                </div>
+
+                <!-- Formulario de selección de fecha -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-xl font-semibold mb-4">Seleccionar fecha para tu obra</h2>
+                    <form id="artworkDateForm" class="space-y-4">
+                        <div>
+                            <label for="artwork" class="block text-sm font-medium text-gray-700">Selecciona tu obra</label>
+                            <select id="artwork" name="artwork_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="">Selecciona una obra...</option>
+                                @foreach(auth()->user()->artworks as $artwork)
+                                    <option value="{{ $artwork->id }}">{{ $artwork->title }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label for="display_date" class="block text-sm font-medium text-gray-700">Fecha de exhibición</label>
+                            <input type="date" id="display_date" name="display_date" 
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                   min="{{ date('Y-m-d', strtotime('+1 day')) }}">
+                        </div>
+                        <button type="submit" 
+                                class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Solicitar fecha
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para mostrar detalles del evento -->
+    <div id="eventModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg p-6 max-w-2xl w-full mx-4">
+            <div class="flex justify-between items-start mb-4">
+                <h3 id="eventTitle" class="text-xl font-bold"></h3>
+                <button onclick="closeEventModal()" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div id="eventDescription" class="text-gray-600 mb-4"></div>
+            <div id="eventDates" class="text-sm text-gray-500"></div>
         </div>
     </div>
 @endsection
@@ -71,43 +102,12 @@
                 },
                 events: '/api/calendar-events',
                 eventClick: function(info) {
-                    showEventModal(info.event);
+                    if (info.event.extendedProps.type === 'artwork') {
+                        loadGalleryImages(info.event.start);
+                    }
                 },
                 dateClick: function(info) {
-                    // Mostrar la galería del día seleccionado
-                    document.getElementById('selected-date-gallery').classList.remove('hidden');
-                    
-                    // Cargar las imágenes del día seleccionado
-                    fetch(`/api/gallery-images/${info.dateStr}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            const galleryGrid = document.getElementById('gallery-grid');
-                            galleryGrid.innerHTML = '';
-                            
-                            if (data.length === 0) {
-                                galleryGrid.innerHTML = '<p class="col-span-full text-center text-gray-500">No hay imágenes disponibles para este día.</p>';
-                                return;
-                            }
-                            
-                            data.forEach(image => {
-                                const galleryItem = document.createElement('div');
-                                galleryItem.className = 'relative overflow-hidden rounded-lg shadow-md group';
-                                galleryItem.innerHTML = `
-                                    <img src="${image.url}" alt="${image.title}" class="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105">
-                                    <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 text-white p-4 transform translate-y-full transition-transform duration-300 group-hover:translate-y-0">
-                                        <h3 class="font-bold">${image.title}</h3>
-                                        <p class="text-sm">${image.artist}</p>
-                                        <p class="text-sm mt-2">${image.description || ''}</p>
-                                    </div>
-                                `;
-                                galleryGrid.appendChild(galleryItem);
-                            });
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            const galleryGrid = document.getElementById('gallery-grid');
-                            galleryGrid.innerHTML = '<p class="col-span-full text-center text-red-500">Error al cargar las imágenes.</p>';
-                        });
+                    loadGalleryImages(info.date);
                 }
             });
             calendar.render();
@@ -149,5 +149,62 @@
                 closeEventModal();
             }
         });
+
+        // Cargar imágenes de la galería
+        function loadGalleryImages(date) {
+            const formattedDate = date.toISOString().split('T')[0];
+            fetch(`/api/gallery-images/${formattedDate}`)
+                .then(response => response.json())
+                .then(images => {
+                    const gallery = document.getElementById('gallery');
+                    gallery.innerHTML = images.map(image => `
+                        <div class="relative group">
+                            <img src="${image.url}" alt="${image.title}" class="w-full h-48 object-cover rounded-lg">
+                            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-300 rounded-lg flex items-center justify-center">
+                                <div class="text-white opacity-0 group-hover:opacity-100 text-center p-4">
+                                    <h3 class="font-semibold">${image.title}</h3>
+                                    <p class="text-sm">por ${image.artist}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                });
+        }
+
+        // Manejar el formulario de selección de fecha
+        const artworkDateForm = document.getElementById('artworkDateForm');
+        artworkDateForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            fetch('/api/artwork-display-dates', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({
+                    artwork_id: formData.get('artwork_id'),
+                    display_date: formData.get('display_date')
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    alert(data.message);
+                    calendar.refetchEvents();
+                    this.reset();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Ha ocurrido un error al procesar tu solicitud');
+            });
+        });
+
+        // Cargar imágenes del día actual al inicio
+        loadGalleryImages(new Date());
     </script>
 @endpush 

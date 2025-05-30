@@ -33,4 +33,9 @@ class Artwork extends Model
     {
         return $this->belongsToMany(Exhibition::class);
     }
+
+    public function displayDates()
+    {
+        return $this->hasMany(ArtworkDisplayDate::class);
+    }
 } 
