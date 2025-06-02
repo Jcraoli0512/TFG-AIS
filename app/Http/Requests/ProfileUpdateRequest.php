@@ -25,6 +25,17 @@ class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
+            'biography' => ['nullable', 'string', 'max:1000'],
+            'profile_photo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'profile_photo.image' => 'El archivo debe ser una imagen.',
+            'profile_photo.mimes' => 'La imagen debe ser de tipo: jpeg, png, jpg, gif.',
+            'profile_photo.max' => 'La imagen no debe pesar más de 2MB.',
         ];
     }
 }

@@ -17,39 +17,8 @@ class CalendarController extends Controller
 
     public function getEvents()
     {
-        $exhibitions = Exhibition::where('is_public', true)
-            ->where('status', 'approved')
-            ->get()
-            ->map(function ($exhibition) {
-                return [
-                    'id' => 'exhibition_' . $exhibition->id,
-                    'title' => $exhibition->title,
-                    'start' => $exhibition->start_date,
-                    'end' => $exhibition->end_date,
-                    'url' => '#',
-                    'description' => $exhibition->description,
-                    'type' => 'exhibition'
-                ];
-            });
-
-        // Obtener fechas de exhibición de obras
-        $artworkDates = ArtworkDisplayDate::where('is_approved', true)
-            ->with(['artwork', 'user'])
-            ->get()
-            ->map(function ($displayDate) {
-                return [
-                    'id' => 'artwork_' . $displayDate->id,
-                    'title' => $displayDate->artwork->title,
-                    'start' => $displayDate->display_date,
-                    'end' => $displayDate->display_date,
-                    'url' => '#',
-                    'description' => $displayDate->artwork->description,
-                    'type' => 'artwork',
-                    'artist' => $displayDate->user->name
-                ];
-            });
-
-        return response()->json($exhibitions->concat($artworkDates));
+        // return response()->json($exhibitions->concat($artworkDates));
+        return response()->json([]);
     }
 
     public function getGalleryImages($date)

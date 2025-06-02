@@ -83,7 +83,12 @@ class User extends Authenticatable
     public function getProfilePhotoUrlAttribute()
     {
         if ($this->profile_photo) {
-            return asset($this->profile_photo);
+            $url = '/storage/' . $this->profile_photo;
+            Log::info('Generando URL de foto de perfil', [
+                'profile_photo' => $this->profile_photo,
+                'url' => $url
+            ]);
+            return $url;
         }
         return asset('img_web/default-profile.png');
     }

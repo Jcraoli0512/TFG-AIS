@@ -2,8 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Artwork;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Log;
 
 class ArtworkController extends Controller
 {
@@ -33,7 +38,38 @@ class ArtworkController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'technique' => 'required|string|max:255',
+            'year' => 'required|integer|min:1900|max:' . date('Y'),
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // max 2MB
+            'collection_id' => 'nullable|exists:collections,id'
+        ]);
+
+        // Guardar la imagen
+        $imagePath = $request->file('image')->store('artworks', 'public');
+
+        // Crear la obra
+        $artwork = Artwork::create([
+            'user_id' => Auth::id(),
+            'title' => $validated['title'],
+            'description' => $validated['description'],
+            'technique' => $validated['technique'],
+            'year' => $validated['year'],
+            'image_path' => $imagePath,
+            'collection_id' => $validated['collection_id'] ?? null
+        ]);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'message' => 'Obra creada exitosamente',
+                'artwork' => $artwork
+            ]);
+        }
+
+        return redirect()->route('profile.show', ['user' => Auth::user()])
+            ->with('success', 'Obra creada exitosamente');
     }
 
     /**
@@ -66,5 +102,14 @@ class ArtworkController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    // Nuevo método para obtener la vista parcial de selección de obras
+    public function getArtworkSelectionPartial()
+    {
+        $user = Auth::user();
+        $artworks = $user->artworks;
+        Log::info('ArtworkController@getArtworkSelectionPartial: Obras encontradas para el usuario', ['user_id' => $user->id, 'count' => $artworks->count()]);
+        return view('artworks._artwork_selection_partial', compact('artworks'));
     }
 }

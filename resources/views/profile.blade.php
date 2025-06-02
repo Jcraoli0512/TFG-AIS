@@ -1,9 +1,14 @@
 @extends('layouts.app')
 
+@php
+use Illuminate\Support\Facades\Storage;
+@endphp
+
 @section('title', 'Perfil de ' . $user->name)
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
+
+<div class="container mx-auto px-4">
     <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
         {{-- Top section: Name, Bio, Profile Photo --}}
         <div class="flex flex-col md:flex-row items-center md:items-start gap-8 mb-12">
@@ -27,13 +32,7 @@
             </div>
             {{-- Profile Photo --}}
             <div class="flex-shrink-0">
-                 {{-- Use a conditional to check if profile_photo exists --}}
-                @if($user->profile_photo)
-                    <img src="{{ asset($user->profile_photo) }}" alt="Foto de perfil de {{ $user->name }}" class="w-48 h-48 object-cover rounded-lg shadow-md">
-                @else
-                    {{-- Placeholder or default image if no profile photo --}}
-                    <img src="{{ asset('img_web/default-profile.png') }}" alt="Foto de perfil por defecto" class="w-48 h-48 object-cover rounded-lg shadow-md">
-                @endif
+                <img src="{{ $user->profile_photo_url }}" alt="Foto de perfil de {{ $user->name }}" class="w-48 h-48 object-cover rounded-lg shadow-md">
             </div>
         </div>
 
@@ -57,7 +56,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     @foreach($user->artworks as $artwork)
                         <div class="relative group rounded-lg overflow-hidden shadow-md">
-                            <img src="{{ asset($artwork->image_path) }}" alt="{{ $artwork->title }}" class="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105">
+                            <img src="{{ Storage::url($artwork->image_path) }}" alt="{{ $artwork->title }}" class="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105">
                             <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-300 flex items-center justify-center p-4">
                                 <div class="text-white opacity-0 group-hover:opacity-100 text-center">
                                     <h3 class="font-semibold text-lg mb-1">{{ $artwork->title }}</h3>
@@ -96,38 +95,36 @@
 </div>
 
 {{-- Edit Profile Modal --}}
-<div id="editProfileModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+<div id="editProfileModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden" style="z-index: 100;">
     <div class="relative top-20 mx-auto p-5 border max-w-lg w-full shadow-lg rounded-md bg-white">
         <!-- Modal Header -->
-        <div class="flex justify-between items-center pb-3">
+        <div class="pb-3">
             <h3 class="text-lg font-bold">Editar Perfil</h3>
-            <button class="close-modal text-gray-500 hover:text-gray-700 text-2xl font-semibold">&times;</button>
         </div>
 
         <!-- Modal Body - Form will be loaded here -->
         <div id="editProfileModalBody">
             <p>Cargando formulario...</p>
         </div>
-
     </div>
 </div>
 
 {{-- Add Artwork Modal --}}
-<div id="addArtworkModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+<div id="addArtworkModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden" style="z-index: 100;">
     <div class="relative top-20 mx-auto p-5 border max-w-lg w-full shadow-lg rounded-md bg-white">
         <!-- Modal Header -->
-        <div class="flex justify-between items-center pb-3">
+        <div class="pb-3">
             <h3 class="text-lg font-bold">Añadir Obra</h3>
-            <button class="close-modal text-gray-500 hover:text-gray-700 text-2xl font-semibold">&times;</button>
         </div>
 
         <!-- Modal Body - Form will be loaded here -->
         <div id="addArtworkModalBody">
             <p>Cargando formulario...</p>
         </div>
-
     </div>
 </div>
+
+@endsection
 
 @push('scripts')
 <script>
@@ -136,7 +133,6 @@
     const addArtworkModal = document.getElementById('addArtworkModal');
     const openEditProfileModalButton = document.getElementById('openEditProfileModal');
     const openAddArtworkModalButton = document.getElementById('openAddArtworkModal');
-    const closeModalButtons = document.querySelectorAll('.close-modal');
 
     // Function to open modal and load content
     async function openModal(modalElement, modalBodyElement, fetchUrl) {
@@ -146,7 +142,7 @@
 
         // Fetch form content via AJAX
         try {
-            console.log('Fetching URL:', fetchUrl); // Debug log
+            console.log('Fetching URL:', fetchUrl);
             const response = await fetch(fetchUrl, {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
@@ -197,17 +193,29 @@
                                 }, 2000);
                             } else {
                                 // Mostrar errores de validación
-                                const errors = result.errors;
-                                Object.keys(errors).forEach(field => {
-                                    const input = form.querySelector(`[name="${field}"]`);
-                                    if (input) {
-                                        input.classList.add('border-red-500');
-                                        const errorDiv = document.createElement('p');
-                                        errorDiv.className = 'mt-1 text-sm text-red-600';
-                                        errorDiv.textContent = errors[field][0];
-                                        input.parentNode.appendChild(errorDiv);
-                                    }
-                                });
+                                if (result.errors) {
+                                    // Limpiar errores anteriores
+                                    const errorMessages = modalBodyElement.querySelectorAll('.text-red-600');
+                                    errorMessages.forEach(el => el.remove());
+                                    
+                                    // Mostrar nuevos errores
+                                    Object.keys(result.errors).forEach(field => {
+                                        const input = form.querySelector(`[name="${field}"]`);
+                                        if (input) {
+                                            input.classList.add('border-red-500');
+                                            const errorDiv = document.createElement('p');
+                                            errorDiv.className = 'mt-1 text-sm text-red-600';
+                                            errorDiv.textContent = result.errors[field][0];
+                                            input.parentNode.appendChild(errorDiv);
+                                        }
+                                    });
+                                } else {
+                                    modalBodyElement.innerHTML = `
+                                        <div class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg">
+                                            <p>Error al actualizar el perfil. Por favor, inténtalo de nuevo.</p>
+                                        </div>
+                                    `;
+                                }
                             }
                         } catch (error) {
                             console.error('Error submitting form:', error);
@@ -219,6 +227,15 @@
                         }
                     });
                 }
+
+                // Añadir manejador para los botones de cancelar
+                const cancelButtons = modalBodyElement.querySelectorAll('.close-modal');
+                cancelButtons.forEach(button => {
+                    button.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        closeModal(modalElement);
+                    });
+                });
             } else {
                 modalBodyElement.innerHTML = `<p class="text-red-600">Error al cargar el formulario (${response.status}): ${response.statusText}</p>`;
                 console.error('Error loading form:', response.statusText);
@@ -232,16 +249,17 @@
     // Function to close modal
     function closeModal(modalElement) {
         modalElement.classList.add('hidden');
-        // Optional: Clear modal body content on close
-        // modalElement.querySelector('.modal-body').innerHTML = '';
+        const modalBody = modalElement.querySelector('.modal-body, [id$="ModalBody"]');
+        if (modalBody) {
+            modalBody.innerHTML = '<p>Cargando formulario...</p>';
+        }
     }
 
     // Event listener for Edit Profile button
     if (openEditProfileModalButton) {
         openEditProfileModalButton.addEventListener('click', function() {
-            // Usar la ruta nombrada para asegurar la URL correcta
             const url = '{{ route('profile.edit') }}';
-            console.log('Generated URL:', url); // Debug log
+            console.log('Generated URL:', url);
             openModal(editProfileModal, document.getElementById('editProfileModalBody'), url);
         });
     }
@@ -253,15 +271,54 @@
         });
     }
 
-    // Event listeners for close modal buttons
-    closeModalButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            // Find the closest modal parent and close it
-            const modal = this.closest('.fixed');
-            if (modal) {
-                closeModal(modal);
-            }
-        });
+    // Manejar el envío del formulario de obras
+    document.addEventListener('submit', function(e) {
+        if (e.target && e.target.matches('form[action="{{ route('artworks.store') }}"]')) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const formData = new FormData(form);
+            const modalBody = document.getElementById('addArtworkModalBody');
+            
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.message || 'Error al guardar la obra');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.message) {
+                    // Mostrar mensaje de éxito
+                    modalBody.innerHTML = `
+                        <div class="p-4 mb-4 text-sm text-green-700 bg-green-100 rounded-lg">
+                            <p>${data.message}</p>
+                        </div>
+                    `;
+                    
+                    // Recargar la página después de 2 segundos
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                modalBody.innerHTML = `
+                    <div class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg">
+                        <p>${error.message || 'Ha ocurrido un error al guardar la obra'}</p>
+                    </div>
+                `;
+            });
+        }
     });
 
     // Close modals when clicking outside of them
@@ -269,10 +326,9 @@
         if (event.target === editProfileModal) {
             closeModal(editProfileModal);
         }
-         if (event.target === addArtworkModal) {
+        if (event.target === addArtworkModal) {
             closeModal(addArtworkModal);
         }
     });
-
 </script>
 @endpush 

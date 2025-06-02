@@ -31,15 +31,18 @@
                 <div class="bg-white rounded-lg shadow p-6">
                     <h2 class="text-xl font-semibold mb-4">Seleccionar fecha para tu obra</h2>
                     <form id="artworkDateForm" class="space-y-4">
+                        @csrf
+                        {{-- Campo oculto para almacenar IDs de obras seleccionadas --}}
+                        <input type="hidden" name="artwork_ids" id="selectedArtworkIdsInput" value="">
+
                         <div>
-                            <label for="artwork" class="block text-sm font-medium text-gray-700">Selecciona tu obra</label>
-                            <select id="artwork" name="artwork_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                <option value="">Selecciona una obra...</option>
-                                @foreach(auth()->user()->artworks as $artwork)
-                                    <option value="{{ $artwork->id }}">{{ $artwork->title }}</option>
-                                @endforeach
-                            </select>
+                            <label class="block text-sm font-medium text-gray-700">Obras seleccionadas</label>
+                            <div id="selectedArtworksDisplay" class="mt-1 text-sm text-gray-900">Ninguna obra seleccionada</div>
+                            <button type="button" id="openArtworkSelectionModal" class="mt-2 inline-flex items-center px-4 py-2 bg-gray-200 border border-transparent rounded-md font-semibold text-xs text-gray-800 uppercase tracking-widest hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                                Seleccionar Obras
+                            </button>
                         </div>
+
                         <div>
                             <label for="display_date" class="block text-sm font-medium text-gray-700">Fecha de exhibición</label>
                             <input type="date" id="display_date" name="display_date" 
@@ -56,19 +59,45 @@
         </div>
     </div>
 
+    {{-- Modal para seleccionar obras --}}
+    <div id="artworkSelectionModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border max-w-2xl w-full shadow-lg rounded-md bg-white">
+            <!-- Modal Header -->
+            <div class="pb-3 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-lg font-bold">Seleccionar Obras</h3>
+                <button type="button" class="close-artwork-selection-modal text-gray-400 hover:text-gray-600 text-2xl font-semibold leading-none">&times;</button>
+            </div>
+
+            <!-- Modal Body - Lista de obras se cargará aquí -->
+            <div id="artworkSelectionModalBody" class="py-4 max-h-96 overflow-y-auto">
+                <p>Cargando obras...</p>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="pt-3 border-t border-gray-200 flex justify-end">
+                 <button type="button" class="close-artwork-selection-modal inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 mr-3">
+                    Cancelar
+                </button>
+                <button type="button" id="saveArtworkSelection" class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                    Confirmar Selección
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal para mostrar detalles del evento -->
     <div id="eventModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
         <div class="bg-white rounded-lg p-6 max-w-2xl w-full mx-4">
-            <div class="flex justify-between items-start mb-4">
+            <div class="mb-4">
                 <h3 id="eventTitle" class="text-xl font-bold"></h3>
-                <button onclick="closeEventModal()" class="text-gray-500 hover:text-gray-700">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
             </div>
             <div id="eventDescription" class="text-gray-600 mb-4"></div>
             <div id="eventDates" class="text-sm text-gray-500"></div>
+            <div class="mt-6 flex justify-end">
+                <button onclick="closeEventModal()" class="inline-flex items-center px-4 py-2 bg-gray-200 border border-transparent rounded-md font-semibold text-xs text-gray-800 uppercase tracking-widest hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                    Cerrar
+                </button>
+            </div>
         </div>
     </div>
 @endsection
@@ -171,12 +200,80 @@
                 });
         }
 
-        // Manejar el formulario de selección de fecha
+        // --- Lógica para el modal de selección de obras ---
+        const artworkSelectionModal = document.getElementById('artworkSelectionModal');
+        const artworkSelectionModalBody = document.getElementById('artworkSelectionModalBody');
+        const openArtworkSelectionModalButton = document.getElementById('openArtworkSelectionModal');
+        const saveArtworkSelectionButton = document.getElementById('saveArtworkSelection');
+        const selectedArtworkIdsInput = document.getElementById('selectedArtworkIdsInput');
+        const selectedArtworksDisplay = document.getElementById('selectedArtworksDisplay');
+
+        // Función para abrir el modal de selección de obras
+        if (openArtworkSelectionModalButton) {
+            openArtworkSelectionModalButton.addEventListener('click', function() {
+                artworkSelectionModal.classList.remove('hidden');
+                // Cargar la lista de obras en el cuerpo del modal
+                fetch('{{ route('artworks.selection-partial') }}')
+                    .then(response => response.text())
+                    .then(html => {
+                        artworkSelectionModalBody.innerHTML = html;
+                    })
+                    .catch(error => {
+                        console.error('Error al cargar la lista de obras:', error);
+                        artworkSelectionModalBody.innerHTML = '<p class="text-red-600">Error al cargar las obras.</p>';
+                    });
+            });
+        }
+
+        // Función para cerrar el modal de selección de obras
+        function closeArtworkSelectionModal() {
+            artworkSelectionModal.classList.add('hidden');
+        }
+
+        // Manejar clics en el botón de cerrar del modal
+        const closeArtworkModalButtons = artworkSelectionModal.querySelectorAll('.close-artwork-selection-modal');
+        closeArtworkModalButtons.forEach(button => {
+            button.addEventListener('click', closeArtworkSelectionModal);
+        });
+
+        // Manejar clic fuera del modal para cerrarlo
+        window.addEventListener('click', function(event) {
+            if (event.target === artworkSelectionModal) {
+                closeArtworkSelectionModal();
+            }
+        });
+
+        // Manejar clic en el botón de confirmar selección
+        if (saveArtworkSelectionButton) {
+            saveArtworkSelectionButton.addEventListener('click', function() {
+                const selectedCheckboxes = artworkSelectionModalBody.querySelectorAll('input[name="selected_artworks[]"]:checked');
+                const selectedIds = Array.from(selectedCheckboxes).map(checkbox => checkbox.value);
+                const selectedTitles = Array.from(selectedCheckboxes).map(checkbox => checkbox.closest('label').querySelector('span').textContent);
+
+                // Actualizar el campo oculto y el display de obras seleccionadas en el formulario principal
+                selectedArtworkIdsInput.value = JSON.stringify(selectedIds);
+                selectedArtworksDisplay.textContent = selectedTitles.length > 0 ? selectedTitles.join(', ') : 'Ninguna obra seleccionada';
+
+                closeArtworkSelectionModal();
+            });
+        }
+
+        // --- Manejar el envío del formulario principal (actualizado para usar el campo oculto) ---
         const artworkDateForm = document.getElementById('artworkDateForm');
         artworkDateForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
             const formData = new FormData(this);
+            // Obtener los IDs seleccionados del campo oculto
+            const selectedArtworkIdsString = selectedArtworkIdsInput.value;
+            const selectedArtworkIds = selectedArtworkIdsString ? JSON.parse(selectedArtworkIdsString) : [];
+
+            // Verificar si se ha seleccionado al menos una obra (esta validación ahora es redundante si se valida en el modal, pero la mantenemos por seguridad)
+            if (selectedArtworkIds.length === 0) {
+                alert('Por favor, selecciona al menos una obra para la exhibición.');
+                return; // Detener el envío del formulario
+            }
+
             fetch('/api/artwork-display-dates', {
                 method: 'POST',
                 headers: {
@@ -184,15 +281,37 @@
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                 },
                 body: JSON.stringify({
-                    artwork_id: formData.get('artwork_id'),
+                    artwork_ids: selectedArtworkIds,
                     display_date: formData.get('display_date')
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    // Si la respuesta no es OK, intentar leer los errores de validación
+                    return response.json().then(data => {
+                        if (response.status === 422 && data.errors) {
+                            // Mostrar errores de validación específicos
+                            let errorMessages = 'Error de validación:\n';
+                            for (const field in data.errors) {
+                                errorMessages += `- ${data.errors[field].join(', ')}\n`;
+                            }
+                            alert(errorMessages);
+                        } else if (data.error) {
+                            // Mostrar otros errores del servidor
+                            alert(data.error);
+                        } else {
+                            // Mostrar un error genérico si no hay mensajes específicos
+                            alert('Ha ocurrido un error al procesar tu solicitud');
+                        }
+                        // Lanzar un error para que el catch lo maneje si es necesario
+                        throw new Error(data.message || 'Error en la respuesta del servidor');
+                    });
+                }
+                // Si la respuesta es OK, parsear el JSON normalmente
+                return response.json();
+            })
             .then(data => {
-                if (data.error) {
-                    alert(data.error);
-                } else {
+                if (data.message) {
                     alert(data.message);
                     calendar.refetchEvents();
                     this.reset();
@@ -200,7 +319,8 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Ha ocurrido un error al procesar tu solicitud');
+                // Este catch ahora es más para errores de red o errores no manejados por el then
+                // Ya no debería mostrar la alerta genérica si la validación falló (código 422)
             });
         });
 

@@ -66,7 +66,7 @@
     <div id="editUserModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
         <div class="relative top-20 mx-auto p-5 border max-w-xl w-full shadow-lg rounded-md bg-white">
             <!-- Modal Header -->
-            <div class="flex justify-between items-center pb-3">
+            <div class="pb-3">
                 <h3 class="text-lg font-bold">Editar Usuario</h3>
             </div>
 
@@ -75,11 +75,6 @@
                 <!-- Form content will be loaded dynamically -->
                 <p>Cargando formulario...</p>
             </div>
-
-            <!-- Modal Footer (optional, can include Save/Cancel if not part of the form) -->
-            <div class="flex justify-end pt-4">
-                 {{-- Buttons will be part of the form loaded in modal body --}}
-            </div>
         </div>
     </div>
 
@@ -87,7 +82,7 @@
     <div id="deleteConfirmationModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
         <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <!-- Modal Header -->
-            <div class="flex justify-between items-start pb-3">
+            <div class="pb-3">
                 <h3 class="text-lg font-bold">Confirmar Eliminación</h3>
             </div>
 

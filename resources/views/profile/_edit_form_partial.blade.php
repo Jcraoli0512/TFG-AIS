@@ -1,4 +1,4 @@
-<form method="POST" action="{{ route('profile.update') }}" class="space-y-6">
+<form method="POST" action="{{ route('profile.update') }}" class="space-y-6" enctype="multipart/form-data">
     @csrf
     @method('PUT')
 
@@ -24,6 +24,23 @@
         @error('biography')
             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
         @enderror
+    </div>
+
+    <div>
+        <label for="profile_photo" class="block text-sm font-medium text-gray-700">Foto de perfil</label>
+        <div class="mt-1 flex items-center">
+            <img src="{{ $user->profile_photo_url }}" alt="Foto de perfil actual" class="h-20 w-20 rounded-full object-cover">
+            <input type="file" name="profile_photo" id="profile_photo" accept="image/*" class="ml-4 block w-full text-sm text-gray-500
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-md file:border-0
+                file:text-sm file:font-semibold
+                file:bg-indigo-50 file:text-indigo-700
+                hover:file:bg-indigo-100">
+        </div>
+        @error('profile_photo')
+            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+        @enderror
+        <p class="mt-1 text-sm text-gray-500">Formatos permitidos: JPG, PNG, GIF. Las imágenes se optimizarán automáticamente y se convertirán a WebP para mejor rendimiento.</p>
     </div>
 
     <div class="flex justify-end space-x-3">

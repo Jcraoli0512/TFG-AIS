@@ -19,54 +19,56 @@
     </head>
     <body class="bg-gray-50 min-h-screen flex flex-col">
         <!-- Barra de navegación -->
-        <nav class="bg-white shadow-sm">
-            <div class="container mx-auto px-4">
-                <div class="flex justify-between items-center h-16">
-                    <!-- Logo -->
-                    <a href="{{ route('dashboard') }}" class="flex items-center">
-                        <img src="{{ asset('img_web/logo.png') }}" alt="Logo" class="w-10 h-10">
-                    </a>
+        <header class="bg-white shadow-sm">
+            <nav class="bg-white">
+                <div class="container mx-auto px-4">
+                    <div class="flex justify-between items-center h-16">
+                        <!-- Logo -->
+                        <a href="{{ route('dashboard') }}" class="flex items-center">
+                            <img src="{{ asset('img_web/logo.png') }}" alt="Logo" class="w-10 h-10">
+                        </a>
 
-                    <!-- Menú de navegación -->
-                    <div class="hidden md:flex items-center space-x-6">
-                        <a href="{{ route('dashboard') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('dashboard') ? 'font-semibold' : '' }}">Inicio</a>
-                        <a href="{{ auth()->check() ? route('exhibicion') : route('login') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('exhibicion') ? 'font-semibold' : '' }}">Exhibición</a>
-                        <a href="#" class="text-gray-700 hover:text-gray-900">Galería</a>
-                        <a href="{{ auth()->check() ? route('calendar') : route('login') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('calendar') ? 'font-semibold' : '' }}">Calendario</a>
-                        <a href="{{ auth()->check() ? '#' : route('login') }}" class="text-gray-700 hover:text-gray-900">Artistas</a>
-                        <a href="{{ auth()->check() ? '#' : route('login') }}" class="text-gray-700 hover:text-gray-900">Nosotros</a>
-                    </div>
+                        <!-- Menú de navegación -->
+                        <div class="hidden md:flex items-center space-x-6">
+                            <a href="{{ route('dashboard') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('dashboard') ? 'font-semibold' : '' }}">Inicio</a>
+                            <a href="{{ auth()->check() ? route('exhibicion') : route('login') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('exhibicion') ? 'font-semibold' : '' }}">Exhibición</a>
+                            <a href="#" class="text-gray-700 hover:text-gray-900">Galería</a>
+                            <a href="{{ auth()->check() ? route('calendar') : route('login') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('calendar') ? 'font-semibold' : '' }}">Calendario</a>
+                            <a href="{{ auth()->check() ? '#' : route('login') }}" class="text-gray-700 hover:text-gray-900">Artistas</a>
+                            <a href="{{ auth()->check() ? '#' : route('login') }}" class="text-gray-700 hover:text-gray-900">Nosotros</a>
+                        </div>
 
-                    <!-- Menú de usuario -->
-                    <div class="flex items-center space-x-4">
-                        @auth
-                            <div class="relative">
-                                <button id="userMenuButton" type="button" class="flex items-center space-x-2 focus:outline-none">
-                                    <img src="{{ Auth::user()->profile_photo_url }}" alt="Foto de perfil" class="w-8 h-8 rounded-full object-cover">
-                                    <span class="text-gray-700">{{ Auth::user()->name }}</span>
-                                </button>
-                                <div id="userDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
-                                    <a href="{{ route('profile.show', ['user' => Auth::user()->id]) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Ir a perfil</a>
-                                    @if(Auth::user()->isAdmin())
-                                        <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Panel de Administración</a>
-                                    @endif
-                                    <form method="POST" action="{{ route('logout') }}">
-                                        @csrf
-                                        <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Cerrar sesión</button>
-                                    </form>
+                        <!-- Menú de usuario -->
+                        <div class="flex items-center space-x-4">
+                            @auth
+                                <div class="relative">
+                                    <button id="userMenuButton" type="button" class="flex items-center space-x-2 focus:outline-none">
+                                        <img src="{{ Auth::user()->profile_photo_url }}" alt="Foto de perfil" class="w-8 h-8 rounded-full object-cover">
+                                        <span class="text-gray-700">{{ Auth::user()->name }}</span>
+                                    </button>
+                                    <div id="userDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                                        <a href="{{ route('profile.show', ['user' => Auth::user()->id]) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Ir a perfil</a>
+                                        @if(Auth::user()->isAdmin())
+                                            <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Panel de Administración</a>
+                                        @endif
+                                        <form method="POST" action="{{ route('logout') }}">
+                                            @csrf
+                                            <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Cerrar sesión</button>
+                                        </form>
+                                    </div>
                                 </div>
-                            </div>
-                        @else
-                            <a href="{{ route('login') }}" class="text-gray-700 hover:text-gray-900">Iniciar sesión</a>
-                            <a href="{{ route('register') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">Registrarse</a>
-                        @endauth
+                            @else
+                                <a href="{{ route('login') }}" class="text-gray-700 hover:text-gray-900">Iniciar sesión</a>
+                                <a href="{{ route('register') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">Registrarse</a>
+                            @endauth
+                        </div>
                     </div>
                 </div>
-            </div>
-        </nav>
+            </nav>
+        </header>
 
         <!-- Contenido principal -->
-        <main class="flex-grow">
+        <main class="flex-grow pt-4">
             @yield('content')
         </main>
 
@@ -114,8 +116,8 @@
 
         <!-- Scripts -->
         <script>
-            // Manejar el menú de usuario
             document.addEventListener('DOMContentLoaded', function() {
+                // Manejar el menú de usuario
                 const userMenuButton = document.getElementById('userMenuButton');
                 const userDropdown = document.getElementById('userDropdown');
                 

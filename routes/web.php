@@ -76,6 +76,9 @@ Route::middleware(['auth'])->group(function () {
 // Rutas para la gestión de obras (CRUD)
 Route::resource('artworks', ArtworkController::class)->middleware(['auth']);
 
+// Nueva ruta para obtener la vista parcial de selección de obras
+Route::get('/artworks/selection-partial', [ArtworkController::class, 'getArtworkSelectionPartial'])->middleware(['auth'])->name('artworks.selection-partial');
+
 // Exhibición 3D
 Route::get('/exhibicion', function () {
     return view('exhibicion');
