@@ -15,25 +15,29 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         // Crear usuario administrador
-        User::create([
-            'name' => 'Administrador',
-            'email' => 'admin@example.com',
-            'password' => Hash::make('password'),
-            'role' => 'admin',
-            'is_active' => true,
-            'email_verified_at' => now(),
-            'last_active_at' => now()
-        ]);
+        User::firstOrCreate(
+            ['email' => 'admin@example.com'],
+            [
+                'name' => 'Administrador',
+                'password' => Hash::make('password'),
+                'role' => 'admin',
+                'is_active' => true,
+                'email_verified_at' => now(),
+                'last_active_at' => now()
+            ]
+        );
 
         // Crear usuario artista
-        User::create([
-            'name' => 'Artista',
-            'email' => 'artist@example.com',
-            'password' => Hash::make('password'),
-            'role' => 'artist',
-            'is_active' => true,
-            'email_verified_at' => now(),
-            'last_active_at' => now()
-        ]);
+        User::firstOrCreate(
+            ['email' => 'artist@example.com'],
+            [
+                'name' => 'Artista',
+                'password' => Hash::make('password'),
+                'role' => 'artist',
+                'is_active' => true,
+                'email_verified_at' => now(),
+                'last_active_at' => now()
+            ]
+        );
     }
 }

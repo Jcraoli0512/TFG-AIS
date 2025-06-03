@@ -264,14 +264,24 @@
         });
 
         // Close modals when clicking outside of them
-        window.addEventListener('click', function(event) {
-            if (event.target === editUserModal) {
-                editUserModal.classList.add('hidden');
-                editUserModalBody.innerHTML = '<p>Cargando formulario...</p>';
-            } else if (event.target === deleteConfirmationModal) {
-                deleteConfirmationModal.classList.add('hidden');
-                deleteConfirmationMessage.textContent = '';
-                userIdToDelete = null;
+        document.addEventListener('click', function(event) {
+            const editModal = document.getElementById('editUserModal');
+            const deleteModal = document.getElementById('deleteConfirmationModal');
+            const successModal = document.getElementById('successModal');
+
+            // Verificar si el clic fue fuera del contenido de cada modal
+            const clickedInsideEditModalContent = editModal && editModal.contains(event.target) && event.target !== editModal;
+            const clickedInsideDeleteModalContent = deleteModal && deleteModal.contains(event.target) && event.target !== deleteModal;
+            const clickedInsideSuccessModalContent = successModal && successModal.contains(event.target) && event.target !== successModal;
+
+            if (editModal && event.target === editModal && !clickedInsideEditModalContent) {
+                closeEditModal();
+            }
+            if (deleteModal && event.target === deleteModal && !clickedInsideDeleteModalContent) {
+                closeDeleteModal();
+            }
+            if (successModal && event.target === successModal && !clickedInsideSuccessModalContent) {
+                closeSuccessModal();
             }
         });
 
@@ -606,7 +616,8 @@
         document.addEventListener('click', function(event) {
             const editButton = event.target.closest('.open-edit-modal');
             if (editButton) {
-                event.preventDefault();
+                // No prevenir el comportamiento por defecto aquí si el botón es un enlace o tiene acción propia
+                // event.preventDefault(); // Eliminar o comentar si causa problemas
                 const userId = editButton.getAttribute('data-user-id');
                 openEditModal(userId);
             }

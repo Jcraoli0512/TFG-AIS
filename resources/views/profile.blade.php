@@ -56,7 +56,7 @@ use Illuminate\Support\Facades\Storage;
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     @foreach($user->artworks as $artwork)
                         <div class="relative group rounded-lg overflow-hidden shadow-md">
-                            <img src="{{ Storage::url($artwork->image_path) }}" alt="{{ $artwork->title }}" class="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105">
+                            <img src="{{ $artwork->image_path ? asset('storage/' . $artwork->image_path) : 'https://via.placeholder.com/300x200?text=No+Image' }}" alt="{{ $artwork->title }}" class="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105">
                             <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-300 flex items-center justify-center p-4">
                                 <div class="text-white opacity-0 group-hover:opacity-100 text-center">
                                     <h3 class="font-semibold text-lg mb-1">{{ $artwork->title }}</h3>
@@ -398,7 +398,8 @@ use Illuminate\Support\Facades\Storage;
 
     // Event listener for Edit Profile button
     if (openEditProfileModalButton) {
-        openEditProfileModalButton.addEventListener('click', function() {
+        openEditProfileModalButton.addEventListener('click', function(event) {
+            event.stopPropagation();
             const url = '{{ route('profile.edit') }}';
             console.log('Generated URL:', url);
             openModal(editProfileModal, document.getElementById('editProfileModalBody'), url);
@@ -407,17 +408,22 @@ use Illuminate\Support\Facades\Storage;
 
     // Event listener for Add Artwork button
     if (openAddArtworkModalButton) {
-        openAddArtworkModalButton.addEventListener('click', function() {
+        openAddArtworkModalButton.addEventListener('click', function(event) {
+            event.stopPropagation();
             openModal(addArtworkModal, document.getElementById('addArtworkModalBody'), '{{ route('artworks.create') }}');
         });
     }
 
     // Close modals when clicking outside of them
     window.addEventListener('click', function(event) {
-        if (event.target === editProfileModal) {
+        // Verificar si el clic fue fuera del contenido del modal (no solo el overlay)
+        const clickedInsideEditModalContent = editProfileModal.contains(event.target) && event.target !== editProfileModal;
+        const clickedInsideAddModalContent = addArtworkModal.contains(event.target) && event.target !== addArtworkModal;
+
+        if (event.target === editProfileModal && !clickedInsideEditModalContent) {
             closeModal(editProfileModal);
         }
-        if (event.target === addArtworkModal) {
+        if (event.target === addArtworkModal && !clickedInsideAddModalContent) {
             closeModal(addArtworkModal);
         }
     });

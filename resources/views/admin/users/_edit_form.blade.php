@@ -91,7 +91,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 @foreach($user->artworks as $artwork)
                     <div class="relative group">
-                        <img src="{{ $artwork->image_path ? asset($artwork->image_path) : asset('img/placeholder.jpg') }}" 
+                        <img src="{{ $artwork->image_path ? asset('storage/' . $artwork->image_path) : asset('img/placeholder.jpg') }}" 
                              alt="{{ $artwork->title }}" 
                              class="w-full h-48 object-cover rounded-lg">
                         <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex flex-col items-center justify-center p-4">
