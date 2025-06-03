@@ -45,8 +45,9 @@ Route::middleware(['auth'])->group(function () {
 
     // Edición de perfil
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::put('/profile/panoramic', [ProfileController::class, 'updatePanoramic'])->name('profile.update.panoramic');
 
     // Ver perfil de usuario específico
     Route::get('/profile/{user}', function (App\Models\User $user) {
@@ -96,6 +97,8 @@ Route::group(['middleware' => ['web', 'auth', \App\Http\Middleware\AdminMiddlewa
     Route::get('/users/{user}/edit', [DashboardController::class, 'editUser'])->name('users.edit');
     Route::put('/users/{user}', [DashboardController::class, 'updateUser'])->name('users.update');
     Route::delete('/users/{user}', [DashboardController::class, 'deleteUser'])->name('users.delete');
+    Route::delete('/users/{user}/artworks/{artwork}', [DashboardController::class, 'deleteUserArtwork'])->name('admin.users.artworks.delete');
+    Route::delete('/users/{user}/panoramic-image', [DashboardController::class, 'deletePanoramicImage'])->name('admin.users.panoramic.delete');
 });
 
 /*

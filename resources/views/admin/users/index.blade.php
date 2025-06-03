@@ -104,6 +104,24 @@
         </div>
     </div>
 
+    {{-- Success Modal --}}
+    <div id="successModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden" style="z-index: 100;">
+        <div class="relative top-20 mx-auto p-5 border max-w-sm w-full shadow-lg rounded-md bg-white">
+            <div class="flex flex-col items-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+                    <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2" id="successMessage"></h3>
+                <button onclick="closeSuccessModal()" 
+                        class="mt-4 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    Aceptar
+                </button>
+            </div>
+        </div>
+    </div>
+
     @push('scripts')
     <script>
         console.log('Script loaded'); // Debug: Check if script loads
@@ -143,9 +161,54 @@
         // Handle click on the confirm delete button inside the modal
         const confirmDeleteButton = document.getElementById('confirmDeleteButton');
         if (confirmDeleteButton) {
-            confirmDeleteButton.addEventListener('click', function() {
-                if (userIdToDelete) {
-                    document.getElementById(`delete-form-${userIdToDelete}`).submit();
+            confirmDeleteButton.addEventListener('click', async function() {
+                if (!userIdToDelete) return;
+
+                try {
+                    let response;
+                    if (userIdToDelete.type === 'artwork') {
+                        response = await fetch(`/admin/users/${userIdToDelete.userId}/artworks/${userIdToDelete.artworkId}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            }
+                        });
+                    } else if (userIdToDelete.type === 'panoramic') {
+                        response = await fetch(`/admin/users/${userIdToDelete.userId}/panoramic-image`, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            }
+                        });
+                    } else {
+                        // Eliminación de usuario
+                        response = await fetch(`/admin/users/${userIdToDelete}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            }
+                        });
+                    }
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        showSuccessModal(data.message);
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        throw new Error(data.message || 'Error al eliminar');
+                    }
+                } catch (error) {
+                    showSuccessModal(error.message);
+                } finally {
+                    // Cerrar el modal de confirmación
+                    deleteConfirmationModal.classList.add('hidden');
+                    userIdToDelete = null;
                 }
             });
         }
@@ -323,6 +386,265 @@
             attachModalListeners(); // Initial attachment
         });
 
+        // Funciones para el modal de éxito
+        function showSuccessModal(message) {
+            const modal = document.getElementById('successModal');
+            const messageElement = document.getElementById('successMessage');
+            messageElement.textContent = message;
+            modal.classList.remove('hidden');
+        }
+
+        function closeSuccessModal() {
+            const modal = document.getElementById('successModal');
+            modal.classList.add('hidden');
+        }
+
+        // Función para cerrar el modal de edición
+        function closeEditModal() {
+            const modal = document.getElementById('editUserModal');
+            const modalBody = document.getElementById('editUserModalBody');
+            modal.classList.add('hidden');
+            modalBody.innerHTML = '<p>Cargando formulario...</p>';
+        }
+
+        // Función para manejar la edición de usuarios
+        async function handleEditUser(userId) {
+            const modal = document.getElementById('editUserModal');
+            const modalBody = document.getElementById('editUserModalBody');
+
+            try {
+                modalBody.innerHTML = '<p class="text-center py-4">Cargando formulario...</p>';
+                modal.classList.remove('hidden');
+
+                const response = await fetch(`/admin/users/${userId}/edit`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Error al cargar el formulario');
+                }
+
+                modalBody.innerHTML = data.html;
+
+                // Agregar el manejador del formulario después de cargar el contenido
+                const form = modalBody.querySelector('form');
+                if (form) {
+                    form.addEventListener('submit', async function(e) {
+                        e.preventDefault();
+                        
+                        const submitButton = form.querySelector('button[type="submit"]');
+                        const originalButtonText = submitButton.textContent;
+                        
+                        try {
+                            submitButton.disabled = true;
+                            submitButton.textContent = 'Guardando...';
+                            
+                            const formData = new FormData(form);
+                            const response = await fetch(form.action, {
+                                method: 'POST',
+                                body: formData,
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                                }
+                            });
+
+                            const data = await response.json();
+
+                            if (response.ok) {
+                                showSuccessModal(data.message);
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 1500);
+                            } else {
+                                throw new Error(data.message || 'Error al actualizar el usuario');
+                            }
+                        } catch (error) {
+                            showSuccessModal(error.message);
+                        } finally {
+                            submitButton.disabled = false;
+                            submitButton.textContent = originalButtonText;
+                        }
+                    });
+                }
+            } catch (error) {
+                modalBody.innerHTML = `<p class="text-red-600 text-center py-4">${error.message}</p>`;
+                console.error('Error loading user edit form:', error);
+            }
+        }
+
+        // Función para manejar la eliminación de obras
+        async function handleDeleteArtwork(userId, artworkId) {
+            userIdToDelete = { type: 'artwork', userId, artworkId };
+            deleteConfirmationMessage.textContent = '¿Estás seguro de que deseas eliminar esta obra?';
+            deleteConfirmationModal.classList.remove('hidden');
+        }
+
+        // Función para manejar la eliminación de la imagen panorámica
+        async function handleDeletePanoramic(userId) {
+            userIdToDelete = { type: 'panoramic', userId };
+            deleteConfirmationMessage.textContent = '¿Estás seguro de que deseas eliminar la imagen panorámica?';
+            deleteConfirmationModal.classList.remove('hidden');
+        }
+
+        // Función para manejar la eliminación de usuarios
+        async function handleDeleteUser(userId, userName) {
+            userIdToDelete = userId;
+            deleteConfirmationMessage.textContent = `¿Estás seguro de que quieres eliminar al usuario "${userName}"? Esta acción no se puede deshacer.`;
+            deleteConfirmationModal.classList.remove('hidden');
+        }
+
+        // Función para adjuntar event listeners
+        function attachEventListeners() {
+            // Botones de editar
+            document.querySelectorAll('.open-edit-modal').forEach(button => {
+                button.onclick = function() {
+                    const userId = this.getAttribute('data-user-id');
+                    handleEditUser(userId);
+                };
+            });
+
+            // Botones de eliminar
+            document.querySelectorAll('.open-delete-modal').forEach(button => {
+                button.onclick = function() {
+                    const userId = this.getAttribute('data-user-id');
+                    const userName = this.getAttribute('data-user-name');
+                    handleDeleteUser(userId, userName);
+                };
+            });
+
+            // Botones de eliminar obra
+            document.querySelectorAll('[data-delete-artwork]').forEach(button => {
+                button.onclick = function() {
+                    const userId = this.getAttribute('data-user-id');
+                    const artworkId = this.getAttribute('data-artwork-id');
+                    handleDeleteArtwork(userId, artworkId);
+                };
+            });
+
+            // Botones de eliminar imagen panorámica
+            document.querySelectorAll('[data-delete-panoramic]').forEach(button => {
+                button.onclick = function() {
+                    const userId = this.getAttribute('data-user-id');
+                    handleDeletePanoramic(userId);
+                };
+            });
+
+            // Botones de cerrar modal
+            document.querySelectorAll('.close-modal').forEach(button => {
+                button.onclick = function() {
+                    deleteConfirmationModal.classList.add('hidden');
+                    userIdToDelete = null;
+                };
+            });
+        }
+
+        // Adjuntar event listeners cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', attachEventListeners);
+
+        // Cerrar modal al hacer clic fuera
+        window.addEventListener('click', function(event) {
+            if (event.target === deleteConfirmationModal) {
+                deleteConfirmationModal.classList.add('hidden');
+                userIdToDelete = null;
+            }
+        });
+
+        // Función para abrir el modal de edición
+        async function openEditModal(userId) {
+            console.log('Opening modal for user:', userId);
+            const modal = document.getElementById('editUserModal');
+            const modalBody = document.getElementById('editUserModalBody');
+
+            // Show loading message
+            modalBody.innerHTML = '<p>Cargando formulario...</p>';
+            modal.classList.remove('hidden');
+
+            try {
+                const response = await fetch(`/admin/users/${userId}/edit`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    modalBody.innerHTML = data.html;
+                } else {
+                    modalBody.innerHTML = '<p class="text-red-600">Error al cargar el formulario.</p>';
+                    console.error('Error loading user edit form:', data);
+                }
+            } catch (error) {
+                modalBody.innerHTML = '<p class="text-red-600">Error de red al cargar el formulario.</p>';
+                console.error('Network error loading user edit form:', error);
+            }
+        }
+
+        // Función para cerrar el modal de edición
+        function closeEditModal() {
+            const modal = document.getElementById('editUserModal');
+            const modalBody = document.getElementById('editUserModalBody');
+            modal.classList.add('hidden');
+            modalBody.innerHTML = '<p>Cargando formulario...</p>';
+        }
+
+        // Función para cerrar el modal de confirmación
+        function closeDeleteModal() {
+            const modal = document.getElementById('deleteConfirmationModal');
+            const message = document.getElementById('deleteConfirmationMessage');
+            modal.classList.add('hidden');
+            message.textContent = '';
+            userIdToDelete = null;
+        }
+
+        // Event Listeners para los botones de editar
+        document.addEventListener('click', function(event) {
+            const editButton = event.target.closest('.open-edit-modal');
+            if (editButton) {
+                event.preventDefault();
+                const userId = editButton.getAttribute('data-user-id');
+                openEditModal(userId);
+            }
+        });
+
+        // Event Listeners para los botones de cerrar
+        document.addEventListener('click', function(event) {
+            const closeButton = event.target.closest('.close-modal');
+            if (closeButton) {
+                event.preventDefault();
+                event.stopPropagation();
+                closeEditModal();
+                closeDeleteModal();
+            }
+        });
+
+        // Event Listener para cerrar modales al hacer clic fuera
+        document.addEventListener('click', function(event) {
+            const editModal = document.getElementById('editUserModal');
+            const deleteModal = document.getElementById('deleteConfirmationModal');
+            const successModal = document.getElementById('successModal');
+
+            if (event.target === editModal) {
+                closeEditModal();
+            } else if (event.target === deleteModal) {
+                closeDeleteModal();
+            } else if (event.target === successModal) {
+                closeSuccessModal();
+            }
+        });
+
+        // Prevenir que los clics dentro del modal lo cierren
+        document.addEventListener('click', function(event) {
+            const modalContent = event.target.closest('.relative.top-20.mx-auto');
+            if (modalContent) {
+                event.stopPropagation();
+            }
+        });
     </script>
     @endpush
 @endsection 

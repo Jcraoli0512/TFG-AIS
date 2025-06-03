@@ -14,20 +14,20 @@ use Illuminate\Support\Facades\Storage;
         <div class="flex flex-col md:flex-row items-center md:items-start gap-8 mb-12">
             {{-- Name and Biography --}}
             <div class="flex-1 text-center md:text-left">
-                <h1 class="text-4xl font-bold text-gray-800 mb-4">{{ $user->name }}</h1>
+                <div class="flex items-center justify-center md:justify-start gap-2 mb-4">
+                    <h1 class="text-4xl font-bold text-gray-800">{{ $user->name }}</h1>
+                    @auth
+                        @if(auth()->user()->id === $user->id)
+                            <button id="openEditProfileModal" class="text-gray-600 hover:text-indigo-600 transition-colors duration-200" title="Editar Perfil">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                </svg>
+                            </button>
+                        @endif
+                    @endauth
+                </div>
                 <p class="text-gray-700 leading-relaxed">{{ $user->biography ?: 'Este usuario aún no ha añadido una biografía.' }}</p>
                  {{-- Optional: Add social media links here if available in the user model --}}
-
-                 {{-- Edit Profile Button (Visible only to the profile owner) --}}
-                 @auth
-                     @if(auth()->user()->id === $user->id)
-                         <div class="mt-6">
-                             <button id="openEditProfileModal" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                                 Editar Perfil
-                             </button>
-                         </div>
-                     @endif
-                 @endauth
 
             </div>
             {{-- Profile Photo --}}
@@ -39,18 +39,18 @@ use Illuminate\Support\Facades\Storage;
         @if($user->artworks->count() > 0)
             {{-- Artworks Section --}}
             <div class="mb-12">
-                <h2 class="text-3xl font-semibold text-gray-800 mb-6">Obras</h2>
-
-                {{-- Add Artwork Button (Visible only to the profile owner) --}}
-                 @auth
-                     @if(auth()->user()->id === $user->id)
-                         <div class="mb-6">
-                             <button id="openAddArtworkModal" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                                 Añadir Obra
-                             </button>
-                         </div>
-                     @endif
-                 @endauth
+                <div class="flex items-center gap-2 mb-6">
+                    <h2 class="text-3xl font-semibold text-gray-800">Obras</h2>
+                    @auth
+                        @if(auth()->user()->id === $user->id)
+                            <button id="openAddArtworkModal" class="text-gray-600 hover:text-green-600 transition-colors duration-200" title="Añadir Obra">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                </svg>
+                            </button>
+                        @endif
+                    @endauth
+                </div>
 
                 {{-- Artworks Grid --}}
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -61,8 +61,30 @@ use Illuminate\Support\Facades\Storage;
                                 <div class="text-white opacity-0 group-hover:opacity-100 text-center">
                                     <h3 class="font-semibold text-lg mb-1">{{ $artwork->title }}</h3>
                                     <p class="text-sm">{{ $artwork->technique }} - {{ $artwork->year }}</p>
-                                     {{-- Optional: Link to individual artwork page --}}
-                                     {{-- <a href="{{ route('artworks.show', $artwork) }}" class="mt-2 inline-block text-indigo-400 hover:text-indigo-600 text-sm font-medium">Ver obra</a> --}}
+                                    
+                                    <div class="flex gap-2 justify-center mt-2">
+                                        {{-- Botón de ver (visible para todos) --}}
+                                        <button onclick="openArtworkModal({{ $artwork->id }})" 
+                                                class="inline-flex items-center px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700">
+                                            Ver
+                                        </button>
+                                        
+                                        {{-- Botón de eliminar (solo visible para el propietario) --}}
+                                        @auth
+                                            @if(auth()->user()->id === $user->id)
+                                                <form action="{{ route('artworks.destroy', $artwork) }}" 
+                                                      method="POST" 
+                                                      onsubmit="return confirm('¿Estás seguro de que deseas eliminar esta obra?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" 
+                                                            class="inline-flex items-center px-3 py-1 bg-red-600 text-white text-sm rounded-md hover:bg-red-700">
+                                                        Eliminar
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        @endauth
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -71,24 +93,38 @@ use Illuminate\Support\Facades\Storage;
             </div>
 
         @else
+            <div class="flex items-center gap-2 mb-6">
+                <h2 class="text-3xl font-semibold text-gray-800">Obras</h2>
+                @auth
+                    @if(auth()->user()->id === $user->id)
+                        <button id="openAddArtworkModal" class="text-gray-600 hover:text-green-600 transition-colors duration-200" title="Añadir tu primera Obra">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                        </button>
+                    @endif
+                @endauth
+            </div>
             <p class="text-gray-700 text-center mb-12">{{ $user->name }} aún no ha añadido ninguna obra a la plataforma.</p>
-             {{-- Add Artwork Button (Visible only to the profile owner, even if no artworks) --}}
-             @auth
-                 @if(auth()->user()->id === $user->id)
-                     <div class="mb-6 text-center">
-                         <button id="openAddArtworkModal" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                             Añadir tu primera Obra
-                         </button>
-                     </div>
-                 @endif
-             @endauth
 
         @endif
 
-        {{-- Panoramic Image Section (Placeholder) --}}
-        {{-- Replace with dynamic image if available in user model or elsewhere --}}
-        <div class="w-full rounded-lg overflow-hidden shadow-lg">
-            <img src="https://picsum.photos/1200/400" alt="Imagen Panorámica" class="w-full h-auto object-cover">
+        {{-- Panoramic Image Section --}}
+        <div class="w-full rounded-lg overflow-hidden shadow-lg relative group">
+            <img src="{{ $user->panoramic_image ? asset('storage/' . $user->panoramic_image) : 'https://picsum.photos/1200/300' }}" 
+                 alt="Imagen Panorámica" 
+                 class="w-full h-[200px] object-cover">
+            
+            @auth
+                @if(auth()->user()->id === $user->id)
+                    <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-300 flex items-center justify-center">
+                        <button onclick="openPanoramicImageModal()" 
+                                class="text-white opacity-0 group-hover:opacity-100 bg-black bg-opacity-50 px-4 py-2 rounded-lg hover:bg-opacity-70 transition-all duration-300">
+                            Cambiar Imagen Panorámica
+                        </button>
+                    </div>
+                @endif
+            @endauth
         </div>
 
     </div>
@@ -120,6 +156,111 @@ use Illuminate\Support\Facades\Storage;
         <!-- Modal Body - Form will be loaded here -->
         <div id="addArtworkModalBody">
             <p>Cargando formulario...</p>
+        </div>
+    </div>
+</div>
+
+{{-- Artwork View Modal --}}
+<div id="artworkViewModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden" style="z-index: 100;">
+    <div class="relative top-20 mx-auto p-5 border max-w-4xl w-full shadow-lg rounded-md bg-white">
+        <!-- Modal Header -->
+        <div class="flex justify-between items-center pb-3">
+            <h3 class="text-2xl font-bold" id="artworkTitle"></h3>
+            <button onclick="closeArtworkModal()" class="text-gray-500 hover:text-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="flex flex-col md:flex-row gap-6">
+            <div class="md:w-2/3">
+                <img id="artworkImage" src="" alt="" class="w-full h-auto rounded-lg shadow-md">
+            </div>
+            <div class="md:w-1/3">
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="font-semibold text-gray-700">Técnica</h4>
+                        <p id="artworkTechnique" class="text-gray-600"></p>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-700">Año</h4>
+                        <p id="artworkYear" class="text-gray-600"></p>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-700">Descripción</h4>
+                        <p id="artworkDescription" class="text-gray-600 whitespace-pre-line"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Panoramic Image Edit Modal --}}
+<div id="panoramicImageModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden" style="z-index: 100;">
+    <div class="relative top-20 mx-auto p-5 border max-w-lg w-full shadow-lg rounded-md bg-white">
+        <!-- Modal Header -->
+        <div class="flex justify-between items-center pb-3">
+            <h3 class="text-lg font-bold">Cambiar Imagen Panorámica</h3>
+            <button onclick="closePanoramicImageModal()" class="text-gray-500 hover:text-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <form id="panoramicImageForm" action="{{ route('profile.update.panoramic') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            @method('PUT')
+            
+            <div class="space-y-4">
+                <div>
+                    <label for="panoramic_image" class="block text-sm font-medium text-gray-700">Nueva Imagen Panorámica</label>
+                    <input type="file" 
+                           name="panoramic_image" 
+                           id="panoramic_image" 
+                           accept="image/*"
+                           class="mt-1 block w-full text-sm text-gray-500
+                                  file:mr-4 file:py-2 file:px-4
+                                  file:rounded-md file:border-0
+                                  file:text-sm file:font-semibold
+                                  file:bg-indigo-50 file:text-indigo-700
+                                  hover:file:bg-indigo-100">
+                </div>
+
+                <div class="flex justify-end gap-3">
+                    <button type="button" 
+                            onclick="closePanoramicImageModal()"
+                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                        Cancelar
+                    </button>
+                    <button type="submit"
+                            class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Guardar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- Success Modal --}}
+<div id="successModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden" style="z-index: 100;">
+    <div class="relative top-20 mx-auto p-5 border max-w-sm w-full shadow-lg rounded-md bg-white">
+        <div class="flex flex-col items-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+                <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2" id="successMessage"></h3>
+            <button onclick="closeSuccessModal()" 
+                    class="mt-4 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                Aceptar
+            </button>
         </div>
     </div>
 </div>
@@ -183,7 +324,7 @@ use Illuminate\Support\Facades\Storage;
                                 // Mostrar mensaje de éxito
                                 modalBodyElement.innerHTML = `
                                     <div class="p-4 mb-4 text-sm text-green-700 bg-green-100 rounded-lg">
-                                        <p>Perfil actualizado correctamente.</p>
+                                        <p>${result.message || 'Operación completada correctamente.'}</p>
                                     </div>
                                 `;
                                 
@@ -212,7 +353,7 @@ use Illuminate\Support\Facades\Storage;
                                 } else {
                                     modalBodyElement.innerHTML = `
                                         <div class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg">
-                                            <p>Error al actualizar el perfil. Por favor, inténtalo de nuevo.</p>
+                                            <p>${result.message || 'Error al procesar la solicitud. Por favor, inténtalo de nuevo.'}</p>
                                         </div>
                                     `;
                                 }
@@ -221,7 +362,7 @@ use Illuminate\Support\Facades\Storage;
                             console.error('Error submitting form:', error);
                             modalBodyElement.innerHTML = `
                                 <div class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg">
-                                    <p>Error al actualizar el perfil. Por favor, inténtalo de nuevo.</p>
+                                    <p>Error al procesar la solicitud. Por favor, inténtalo de nuevo.</p>
                                 </div>
                             `;
                         }
@@ -271,56 +412,6 @@ use Illuminate\Support\Facades\Storage;
         });
     }
 
-    // Manejar el envío del formulario de obras
-    document.addEventListener('submit', function(e) {
-        if (e.target && e.target.matches('form[action="{{ route('artworks.store') }}"]')) {
-            e.preventDefault();
-            
-            const form = e.target;
-            const formData = new FormData(form);
-            const modalBody = document.getElementById('addArtworkModalBody');
-            
-            fetch(form.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(data => {
-                        throw new Error(data.message || 'Error al guardar la obra');
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.message) {
-                    // Mostrar mensaje de éxito
-                    modalBody.innerHTML = `
-                        <div class="p-4 mb-4 text-sm text-green-700 bg-green-100 rounded-lg">
-                            <p>${data.message}</p>
-                        </div>
-                    `;
-                    
-                    // Recargar la página después de 2 segundos
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 2000);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                modalBody.innerHTML = `
-                    <div class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg">
-                        <p>${error.message || 'Ha ocurrido un error al guardar la obra'}</p>
-                    </div>
-                `;
-            });
-        }
-    });
-
     // Close modals when clicking outside of them
     window.addEventListener('click', function(event) {
         if (event.target === editProfileModal) {
@@ -328,6 +419,116 @@ use Illuminate\Support\Facades\Storage;
         }
         if (event.target === addArtworkModal) {
             closeModal(addArtworkModal);
+        }
+    });
+
+    // Funciones para el modal de vista de obra
+    function openArtworkModal(artworkId) {
+        const modal = document.getElementById('artworkViewModal');
+        modal.classList.remove('hidden');
+        
+        // Cargar los datos de la obra
+        fetch(`/artworks/${artworkId}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('artworkTitle').textContent = data.title;
+                document.getElementById('artworkImage').src = data.image_url;
+                document.getElementById('artworkImage').alt = data.title;
+                document.getElementById('artworkTechnique').textContent = data.technique;
+                document.getElementById('artworkYear').textContent = data.year;
+                document.getElementById('artworkDescription').textContent = data.description;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+
+    function closeArtworkModal() {
+        const modal = document.getElementById('artworkViewModal');
+        modal.classList.add('hidden');
+    }
+
+    // Cerrar el modal al hacer clic fuera
+    window.addEventListener('click', function(event) {
+        const modal = document.getElementById('artworkViewModal');
+        if (event.target === modal) {
+            closeArtworkModal();
+        }
+    });
+
+    // Funciones para el modal de imagen panorámica
+    function openPanoramicImageModal() {
+        const modal = document.getElementById('panoramicImageModal');
+        modal.classList.remove('hidden');
+    }
+
+    function closePanoramicImageModal() {
+        const modal = document.getElementById('panoramicImageModal');
+        modal.classList.add('hidden');
+    }
+
+    // Funciones para el modal de éxito
+    function showSuccessModal(message) {
+        const modal = document.getElementById('successModal');
+        const messageElement = document.getElementById('successMessage');
+        messageElement.textContent = message;
+        modal.classList.remove('hidden');
+    }
+
+    function closeSuccessModal() {
+        const modal = document.getElementById('successModal');
+        modal.classList.add('hidden');
+    }
+
+    // Manejar el envío del formulario de imagen panorámica
+    document.getElementById('panoramicImageForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const submitButton = this.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.textContent = 'Guardando...';
+        
+        try {
+            const response = await fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Actualizar la imagen en la página
+                const panoramicImage = document.querySelector('.w-full.rounded-lg.overflow-hidden.shadow-lg img');
+                if (panoramicImage) {
+                    panoramicImage.src = data.image_url;
+                }
+                
+                // Cerrar el modal de edición
+                closePanoramicImageModal();
+                
+                // Mostrar modal de éxito
+                showSuccessModal('Imagen panorámica actualizada correctamente');
+            } else {
+                throw new Error(data.message || 'Error al actualizar la imagen panorámica');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showSuccessModal(error.message || 'Error al actualizar la imagen panorámica');
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = 'Guardar';
+        }
+    });
+
+    // Cerrar el modal de éxito al hacer clic fuera
+    window.addEventListener('click', function(event) {
+        const successModal = document.getElementById('successModal');
+        if (event.target === successModal) {
+            closeSuccessModal();
         }
     });
 </script>

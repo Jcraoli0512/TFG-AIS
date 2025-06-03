@@ -75,9 +75,15 @@ class ArtworkController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Artwork $artwork)
     {
-        //
+        return response()->json([
+            'title' => $artwork->title,
+            'description' => $artwork->description,
+            'technique' => $artwork->technique,
+            'year' => $artwork->year,
+            'image_url' => Storage::url($artwork->image_path)
+        ]);
     }
 
     /**
@@ -99,9 +105,24 @@ class ArtworkController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Artwork $artwork)
     {
-        //
+        // Verificar que el usuario es el propietario de la obra
+        if ($artwork->user_id !== Auth::id()) {
+            return redirect()->back()
+                ->with('error', 'No tienes permiso para eliminar esta obra');
+        }
+
+        // Eliminar la imagen del almacenamiento
+        if ($artwork->image_path) {
+            Storage::disk('public')->delete($artwork->image_path);
+        }
+
+        // Eliminar la obra
+        $artwork->delete();
+
+        return redirect()->back()
+            ->with('success', 'Obra eliminada correctamente');
     }
 
     // Nuevo método para obtener la vista parcial de selección de obras

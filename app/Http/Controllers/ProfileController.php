@@ -107,4 +107,50 @@ class ProfileController extends Controller
 
         return Redirect::to('/');
     }
+
+    public function updatePanoramic(Request $request)
+    {
+        try {
+            Log::info('Iniciando actualización de imagen panorámica');
+            
+            $request->validate([
+                'panoramic_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120', // max 5MB
+            ]);
+
+            $user = $request->user();
+            Log::info('Usuario autenticado', ['user_id' => $user->id]);
+
+            // Eliminar la imagen anterior si existe
+            if ($user->panoramic_image) {
+                Log::info('Eliminando imagen anterior', ['path' => $user->panoramic_image]);
+                $oldPath = str_replace('/storage/', '', $user->panoramic_image);
+                if (Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
+                }
+            }
+
+            // Guardar la nueva imagen
+            $path = $request->file('panoramic_image')->store('panoramic-images', 'public');
+            Log::info('Nueva imagen guardada', ['path' => $path]);
+            
+            $user->update([
+                'panoramic_image' => $path
+            ]);
+            Log::info('Base de datos actualizada con nueva ruta');
+
+            return response()->json([
+                'message' => 'Imagen panorámica actualizada correctamente',
+                'image_url' => asset('storage/' . $path)
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error al actualizar imagen panorámica', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'message' => 'Error al actualizar la imagen panorámica: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

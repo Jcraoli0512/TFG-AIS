@@ -21,7 +21,8 @@ class UserSeeder extends Seeder
             'password' => Hash::make('password'),
             'role' => 'admin',
             'is_active' => true,
-            'email_verified_at' => now()
+            'email_verified_at' => now(),
+            'last_active_at' => now()
         ]);
 
         // Crear usuario artista
@@ -31,7 +32,8 @@ class UserSeeder extends Seeder
             'password' => Hash::make('password'),
             'role' => 'artist',
             'is_active' => true,
-            'email_verified_at' => now()
+            'email_verified_at' => now(),
+            'last_active_at' => now()
         ]);
     }
 }

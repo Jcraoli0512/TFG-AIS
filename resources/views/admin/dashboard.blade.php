@@ -63,7 +63,9 @@
                                                 <img class="h-10 w-10 rounded-full" src="{{ $user->profile_photo_url }}" alt="{{ $user->name }}">
                                             </div>
                                             <div class="ml-4">
-                                                <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
+                                                <a href="{{ route('profile.show', $user) }}" class="text-sm font-medium text-purple-600 hover:text-purple-900">
+                                                    {{ $user->name }}
+                                                </a>
                                             </div>
                                         </div>
                                     </td>
