@@ -73,6 +73,9 @@ Route::middleware(['auth'])->group(function () {
         ->middleware(['admin'])
         ->name('artwork-display-dates.approve');
     Route::delete('/api/artwork-display-dates/{displayDate}/cancel', [ArtworkDisplayDateController::class, 'cancel'])->name('artwork-display-dates.cancel');
+    Route::delete('/api/artwork-display-dates/cancel-all/{date}', [ArtworkDisplayDateController::class, 'cancelAll'])
+        ->where('date', '[0-9]{4}-[0-9]{2}-[0-9]{2}')
+        ->name('artwork-display-dates.cancel-all');
 });
 
 // Nueva ruta para obtener la vista parcial de selección de obras
