@@ -101,10 +101,13 @@ Route::middleware(['auth', \App\Http\Middleware\AdminMiddleware::class])->prefix
     Route::delete('/users/{user}/artworks/{artwork}', [DashboardController::class, 'deleteUserArtwork'])->name('admin.users.artworks.delete');
     Route::delete('/users/{user}/panoramic-image', [DashboardController::class, 'deletePanoramicImage'])->name('admin.users.panoramic.delete');
 
-    // Exhibition requests routes
-    Route::get('/exhibition-requests', [DashboardController::class, 'exhibitionRequests'])->name('exhibition-requests.index');
-    Route::post('/exhibition-requests/{id}/approve', [DashboardController::class, 'approveRequest'])->name('exhibition-requests.approve');
-    Route::delete('/exhibition-requests/{id}/reject', [DashboardController::class, 'rejectRequest'])->name('exhibition-requests.reject');
+    // Rutas para solicitudes de exhibición
+    Route::prefix('exhibition-requests')->group(function () {
+        Route::get('/', [DashboardController::class, 'exhibitionRequests'])->name('exhibition-requests.index');
+        Route::post('/batch/{userId}/{date}/approve', [DashboardController::class, 'approveBatch'])->name('exhibition-requests.approve-batch');
+        Route::delete('/batch/{userId}/{date}/reject', [DashboardController::class, 'rejectBatch'])->name('exhibition-requests.reject-batch');
+        Route::get('/batch/{userId}/{date}/artworks', [DashboardController::class, 'getGroupArtworks'])->name('exhibition-requests.get-group-artworks');
+    });
 });
 
 /*

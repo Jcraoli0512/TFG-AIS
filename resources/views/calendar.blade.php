@@ -53,7 +53,7 @@
                         <div>
                             <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                 Solicitar Exhibición
-                            </button>
+                        </button>
                         </div>
                     </form>
                 </div>
@@ -178,6 +178,26 @@
                 <div class="items-center px-4 py-3">
                     <button id="closeConfirmationModal" class="px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300">
                         Aceptar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Modal de Confirmación de Cancelación Masiva --}}
+    <div id="cancelAllConfirmationModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-[10000]">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Confirmar Cancelación Masiva</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p class="text-sm text-gray-500">¿Estás seguro de que deseas cancelar todas las exhibiciones para esta fecha? Esta acción no se puede deshacer.</p>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="cancelAllCancelButton" class="px-4 py-2 mr-2 bg-gray-300 text-gray-700 text-base font-medium rounded-md w-1/2 shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200">
+                        No, Mantener
+                    </button>
+                    <button id="confirmCancelAllButton" class="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-1/2 shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300">
+                        Sí, Cancelar Todo
                     </button>
                 </div>
             </div>
@@ -436,9 +456,9 @@
                 // Check if the click target is the modal backdrop itself, not the modal content
                 const isClickInsideModalContent = event.target.closest('.relative.top-20.mx-auto'); // Selects the modal content div
                 if (event.target === this && !isClickInsideModalContent) {
-                    closeArtworkSelectionModal();
-                }
-            });
+                closeArtworkSelectionModal();
+            }
+        });
         }
 
         // Manejar clic en el botón de confirmar selección
@@ -487,104 +507,17 @@
             .then(response => {
                 if (!response.ok) {
                     return response.json().then(data => {
-                        console.log('Error data from backend:', data); // Debug log
-                        if (response.status === 422 && data.error && data.error.includes('Ya existen obras aprobadas')) {
-                            console.log('Approved dates error detected, showing warning modal.'); // Debug log
-                            // Mostrar un mensaje más amigable en el modal de confirmación
-                            const confirmationModal = document.getElementById('confirmationModal');
-                            const modalTitle = confirmationModal.querySelector('h3');
-                            const modalMessage = confirmationModal.querySelector('p');
-                            const modalIcon = confirmationModal.querySelector('.mx-auto.flex');
-                            
-                            // Cambiar el ícono a un ícono de advertencia
-                            modalIcon.innerHTML = `
-                                <svg class="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                                </svg>
-                            `;
-                            modalIcon.classList.remove('bg-green-100');
-                            modalIcon.classList.add('bg-yellow-100');
-                            
-                            // Cambiar el título y mensaje
-                            modalTitle.textContent = 'Fecha no disponible';
-                            modalTitle.classList.remove('text-green-600');
-                            modalTitle.classList.add('text-yellow-600');
-                            modalMessage.textContent = data.error;
-                            
-                            // Cambiar el botón
-                            const modalButton = confirmationModal.querySelector('button');
-                            modalButton.classList.remove('bg-green-500', 'hover:bg-green-600', 'focus:ring-green-300');
-                            modalButton.classList.add('bg-yellow-500', 'hover:bg-yellow-600', 'focus:ring-yellow-300');
-                            
-                            // Mostrar el modal
-                            confirmationModal.classList.remove('hidden');
-                            document.body.style.overflow = 'hidden';
-                        } else {
-                            // Para otros errores, mostrar el modal con el mensaje de error
-                            const modalTitle = confirmationModal.querySelector('h3');
-                            const modalMessage = confirmationModal.querySelector('p');
-                            const modalIcon = confirmationModal.querySelector('.mx-auto.flex');
-                            
-                            // Cambiar el ícono a un ícono de error
-                            modalIcon.innerHTML = `
-                                <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                            `;
-                            modalIcon.classList.remove('bg-green-100');
-                            modalIcon.classList.add('bg-red-100');
-                            
-                            // Cambiar el título y mensaje
-                            modalTitle.textContent = 'Error';
-                            modalTitle.classList.remove('text-green-600');
-                            modalTitle.classList.add('text-red-600');
-                            modalMessage.textContent = data.error || 'Error al solicitar la fecha de exhibición';
-                            
-                            // Cambiar el botón
-                            const modalButton = confirmationModal.querySelector('button');
-                            modalButton.classList.remove('bg-green-500', 'hover:bg-green-600', 'focus:ring-green-300');
-                            modalButton.classList.add('bg-red-500', 'hover:bg-red-600', 'focus:ring-red-300');
-                            
-                            // Mostrar el modal
-                            confirmationModal.classList.remove('hidden');
-                            document.body.style.overflow = 'hidden';
-                        }
+                        throw new Error(data.error || 'Error al procesar la solicitud');
                     });
                 }
                 return response.json();
             })
             .then(data => {
-                // Mostrar el modal de confirmación de éxito
-                const modalTitle = confirmationModal.querySelector('h3');
-                const modalMessage = confirmationModal.querySelector('p');
-                const modalIcon = confirmationModal.querySelector('.mx-auto.flex');
+                // Mostrar modal de éxito
+                showGeneralMessageModal('Solicitud Enviada', data.message || 'Tu solicitud de exhibición ha sido enviada correctamente. El administrador la revisará y te notificará cuando sea aprobada.', 'success');
                 
-                // Restaurar el ícono de éxito
-                modalIcon.innerHTML = `
-                    <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                `;
-                modalIcon.classList.remove('bg-yellow-100', 'bg-red-100');
-                modalIcon.classList.add('bg-green-100');
-                
-                // Restaurar el título y mensaje de éxito
-                modalTitle.textContent = '¡Solicitud Enviada!';
-                modalTitle.classList.remove('text-yellow-600', 'text-red-600');
-                modalTitle.classList.add('text-green-600');
-                modalMessage.textContent = 'Tu solicitud de exhibición ha sido enviada correctamente. El administrador la revisará y te notificará cuando sea aprobada.';
-                
-                // Restaurar el botón
-                const modalButton = confirmationModal.querySelector('button');
-                modalButton.classList.remove('bg-yellow-500', 'hover:bg-yellow-600', 'focus:ring-yellow-300', 'bg-red-500', 'hover:bg-red-600', 'focus:ring-red-300');
-                modalButton.classList.add('bg-green-500', 'hover:bg-green-600', 'focus:ring-green-300');
-                
-                // Mostrar el modal
-                confirmationModal.classList.remove('hidden');
-                document.body.style.overflow = 'hidden';
-
                 // Limpiar el formulario
-                artworkDateForm.reset();
+                document.getElementById('artworkDateForm').reset();
                 selectedArtworkIdsInput.value = '';
                 selectedArtworksDisplay.textContent = 'Ninguna obra seleccionada';
 
@@ -595,6 +528,8 @@
             })
             .catch(error => {
                 console.error('Error:', error);
+                // Mostrar modal de error
+                showGeneralMessageModal('Error', error.message || 'Ha ocurrido un error al procesar tu solicitud.', 'error');
             });
         });
 
@@ -634,7 +569,29 @@
                 .then(response => response.json())
                 .then(artworks => {
                     console.log('Artworks received:', artworks); // Debug log
-                    content.innerHTML = artworks.length > 0 
+                    
+                    // Verificar si el usuario es admin o propietario de alguna obra
+                    const isAdmin = artworks.some(artwork => artwork.is_admin);
+                    const isOwner = artworks.some(artwork => artwork.is_owner);
+                    
+                    // Crear el contenido del modal
+                    let modalContent = '';
+                    
+                    // Añadir botón de cancelación masiva si es admin o propietario
+                    if (isAdmin || isOwner) {
+                        modalContent += `
+                            <div class="mb-4 flex justify-end">
+                                <button type="button" 
+                                        onclick="cancelAllExhibitions('${date.toISOString().split('T')[0]}', ${isAdmin})" 
+                                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                    ${isAdmin ? 'Cancelar Todas las Exhibiciones (Admin)' : 'Cancelar Todas mis Exhibiciones'}
+                                </button>
+                            </div>
+                        `;
+                    }
+                    
+                    // Añadir la lista de obras
+                    modalContent += artworks.length > 0 
                         ? artworks.map(artwork => {
                             console.log('Processing artwork:', artwork); // Debug log for each artwork
                             return `
@@ -645,11 +602,11 @@
                                     <p class="text-sm text-gray-500">Artista: ${artwork.artist}</p>
                                     <p class="text-sm text-gray-600">Técnica: ${artwork.technique}</p>
                                     <p class="text-sm text-gray-600 mt-1">${artwork.description}</p>
-                                    ${artwork.is_owner ? `
+                                    ${(artwork.is_owner || artwork.is_admin) ? `
                                         <button type="button" 
-                                                onclick="cancelExhibitionDate(${artwork.display_date_id})" 
+                                                onclick="cancelExhibitionDate(${artwork.display_date_id}, ${artwork.is_admin})" 
                                                 class="mt-2 inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                                            Cancelar Exhibición
+                                            ${artwork.is_admin ? 'Cancelar Exhibición (Admin)' : 'Cancelar Exhibición'}
                                         </button>
                                     ` : ''}
                                 </div>
@@ -657,6 +614,7 @@
                         `}).join('')
                         : '<p class="text-gray-500">No hay obras programadas para esta fecha en el espacio 3D.</p>';
                     
+                    content.innerHTML = modalContent;
                     modal.classList.remove('hidden');
                 })
                 .catch(error => {
@@ -720,44 +678,57 @@
         const generalMessageCloseButton = generalMessageModal.querySelector('button'); // Assuming there's only one button with the close behavior
 
         function showGeneralMessageModal(title, message, type = 'success') {
-            generalMessageTitle.textContent = title;
-            generalMessageText.textContent = message;
-            
-            // Configurar ícono y colores según el tipo de mensaje
-            generalMessageIconDiv.classList.remove('bg-green-100', 'bg-yellow-100', 'bg-red-100');
-            generalMessageTitle.classList.remove('text-green-600', 'text-yellow-600', 'text-red-600');
-            generalMessageCloseButton.classList.remove('bg-green-500', 'hover:bg-green-600', 'focus:ring-green-300', 'bg-yellow-500', 'hover:bg-yellow-600', 'focus:ring-yellow-300', 'bg-red-500', 'hover:bg-red-600', 'focus:ring-red-300');
+            const modal = document.getElementById('confirmationModal');
+            const modalTitle = modal.querySelector('h3');
+            const modalMessage = modal.querySelector('p');
+            const modalIcon = modal.querySelector('.mx-auto.flex');
+            const modalButton = modal.querySelector('button');
 
+            // Configurar el ícono según el tipo
             if (type === 'success') {
-                generalMessageIconDiv.innerHTML = `
+                modalIcon.innerHTML = `
                     <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                     </svg>
                 `;
-                generalMessageIconDiv.classList.add('bg-green-100');
-                generalMessageTitle.classList.add('text-green-600');
-                 generalMessageCloseButton.classList.add('bg-green-500', 'hover:bg-green-600', 'focus:ring-green-300');
-            } else if (type === 'warning') {
-                 generalMessageIconDiv.innerHTML = `
-                    <svg class="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                    </svg>
-                `;
-                 generalMessageIconDiv.classList.add('bg-yellow-100');
-                generalMessageTitle.classList.add('text-yellow-600');
-                 generalMessageCloseButton.classList.add('bg-yellow-500', 'hover:bg-yellow-600', 'focus:ring-yellow-300');
+                modalIcon.classList.remove('bg-yellow-100', 'bg-red-100');
+                modalIcon.classList.add('bg-green-100');
+                modalTitle.classList.remove('text-yellow-600', 'text-red-600');
+                modalTitle.classList.add('text-green-600');
+                modalButton.classList.remove('bg-yellow-500', 'hover:bg-yellow-600', 'focus:ring-yellow-300', 'bg-red-500', 'hover:bg-red-600', 'focus:ring-red-300');
+                modalButton.classList.add('bg-green-500', 'hover:bg-green-600', 'focus:ring-green-300');
             } else if (type === 'error') {
-                 generalMessageIconDiv.innerHTML = `
+                modalIcon.innerHTML = `
                     <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 `;
-                 generalMessageIconDiv.classList.add('bg-red-100');
-                generalMessageTitle.classList.add('text-red-600');
-                 generalMessageCloseButton.classList.add('bg-red-500', 'hover:bg-red-600', 'focus:ring-red-300');
+                modalIcon.classList.remove('bg-green-100', 'bg-yellow-100');
+                modalIcon.classList.add('bg-red-100');
+                modalTitle.classList.remove('text-green-600', 'text-yellow-600');
+                modalTitle.classList.add('text-red-600');
+                modalButton.classList.remove('bg-green-500', 'hover:bg-green-600', 'focus:ring-green-300', 'bg-yellow-500', 'hover:bg-yellow-600', 'focus:ring-yellow-300');
+                modalButton.classList.add('bg-red-500', 'hover:bg-red-600', 'focus:ring-red-300');
+            } else if (type === 'warning') {
+                modalIcon.innerHTML = `
+                    <svg class="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                `;
+                modalIcon.classList.remove('bg-green-100', 'bg-red-100');
+                modalIcon.classList.add('bg-yellow-100');
+                modalTitle.classList.remove('text-green-600', 'text-red-600');
+                modalTitle.classList.add('text-yellow-600');
+                modalButton.classList.remove('bg-green-500', 'hover:bg-green-600', 'focus:ring-green-300', 'bg-red-500', 'hover:bg-red-600', 'focus:ring-red-300');
+                modalButton.classList.add('bg-yellow-500', 'hover:bg-yellow-600', 'focus:ring-yellow-300');
             }
 
-            generalMessageModal.classList.remove('hidden');
+            // Configurar título y mensaje
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+
+            // Mostrar el modal
+            modal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
         }
 
@@ -821,6 +792,85 @@
                 return;
             }
             showCancelConfirmationModal(displayDateId);
+        }
+
+        // Variables para la cancelación masiva
+        const cancelAllConfirmationModal = document.getElementById('cancelAllConfirmationModal');
+        const cancelAllCancelButton = document.getElementById('cancelAllCancelButton');
+        const confirmCancelAllButton = document.getElementById('confirmCancelAllButton');
+        let currentCancelAllDate = null;
+        let isAdminCancelAll = false;
+
+        // Función para mostrar el modal de confirmación de cancelación masiva
+        function cancelAllExhibitions(date, isAdmin) {
+            currentCancelAllDate = date;
+            isAdminCancelAll = isAdmin;
+            cancelAllConfirmationModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Función para cerrar el modal de confirmación de cancelación masiva
+        function closeCancelAllConfirmationModal() {
+            cancelAllConfirmationModal.classList.add('hidden');
+            document.body.style.overflow = '';
+            currentCancelAllDate = null;
+            isAdminCancelAll = false;
+        }
+
+        // Listener para el botón 'No, Mantener'
+        cancelAllCancelButton.addEventListener('click', closeCancelAllConfirmationModal);
+
+        // Listener para el botón 'Sí, Cancelar Todo'
+        confirmCancelAllButton.addEventListener('click', function() {
+            if (currentCancelAllDate) {
+                executeCancelAll(currentCancelAllDate, isAdminCancelAll);
+            }
+            closeCancelAllConfirmationModal();
+        });
+
+        // Cerrar modal de cancelación masiva haciendo clic fuera
+        cancelAllConfirmationModal.addEventListener('click', function(event) {
+            if (event.target === cancelAllConfirmationModal) {
+                closeCancelAllConfirmationModal();
+            }
+        });
+
+        // Función para ejecutar la cancelación masiva
+        function executeCancelAll(date, isAdmin) {
+            console.log('Executing cancel all for date:', date); // Debug log
+            fetch(`/api/artwork-display-dates/cancel-all/${date}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                console.log('Response status:', response.status); // Debug log
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.error || 'Error al cancelar las exhibiciones');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Success response:', data); // Debug log
+                // Mostrar modal de éxito
+                showGeneralMessageModal('Cancelación Exitosa', data.message || 'Las exhibiciones han sido canceladas correctamente.', 'success');
+                
+                // Cerrar el modal de obras exhibidas y refrescar el calendario
+                closeExhibitedArtworksModal();
+                if (calendar) {
+                    calendar.refetchEvents();
+                }
+            })
+            .catch(error => {
+                console.error('Error cancelling all exhibitions:', error);
+                // Mostrar modal de error
+                showGeneralMessageModal('Error de Cancelación', error.message || 'Ha ocurrido un error al cancelar las exhibiciones.', 'error');
+            });
         }
     </script>
 @endpush 

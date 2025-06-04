@@ -42,13 +42,30 @@ class ArtworkDisplayDateController extends Controller
                 ->where('is_approved', true)
                 ->get();
 
-            if ($existingApprovedDates->count() > 0) {
+            if ($existingApprovedDates->isNotEmpty()) {
                 Log::warning('ArtworkDisplayDateController@store: Ya existen solicitudes aprobadas para esta fecha', [
                     'displayDate' => $displayDate,
                     'existingCount' => $existingApprovedDates->count()
                 ]);
                 return response()->json([
-                    'error' => 'Ya existen obras aprobadas para exhibir en esta fecha. Por favor, selecciona otra fecha.'
+                    'error' => 'Ya hay una exhibición programada para este día. Por favor, selecciona otra fecha.'
+                ], 422);
+            }
+
+            // Verificar si el usuario ya tiene solicitudes pendientes para esta fecha
+            $existingPendingDates = ArtworkDisplayDate::where('display_date', $displayDate)
+                ->where('user_id', $userId)
+                ->where('is_approved', false)
+                ->get();
+
+            if ($existingPendingDates->isNotEmpty()) {
+                Log::warning('ArtworkDisplayDateController@store: Usuario ya tiene solicitudes pendientes para esta fecha', [
+                    'userId' => $userId,
+                    'displayDate' => $displayDate,
+                    'existingCount' => $existingPendingDates->count()
+                ]);
+                return response()->json([
+                    'error' => 'Ya tienes solicitudes pendientes para esta fecha. Por favor, espera a que sean aprobadas o rechazadas antes de hacer una nueva solicitud.'
                 ], 422);
             }
 
@@ -83,7 +100,6 @@ class ArtworkDisplayDateController extends Controller
 
         } catch (ValidationException $e) {
             Log::error('ArtworkDisplayDateController@store: Error de validación', ['errors' => $e->errors()]);
-            // Devolver los errores de validación específicos al frontend
             return response()->json(['error' => 'Error de validación', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             Log::error('ArtworkDisplayDateController@store: Error inesperado', ['message' => $e->getMessage(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
@@ -148,14 +164,14 @@ class ArtworkDisplayDateController extends Controller
     {
         $user = Auth::user();
 
-        // Verificar que el usuario es el propietario de la fecha de exhibición
-        if ($displayDate->user_id !== $user->id) {
+        // Verificar que el usuario es el propietario de la fecha de exhibición o es administrador
+        if ($displayDate->user_id !== $user->id && !$user->isAdmin()) {
             return response()->json(['error' => 'No tienes permiso para cancelar esta fecha de exhibición.'], 403);
         }
 
-        // Verificar que la solicitud ya ha sido aprobada (opcional, pero lógico para cancelar algo que ya existe)
+        // Verificar que la solicitud ya ha sido aprobada
         if (!$displayDate->is_approved) {
-             return response()->json(['error' => 'Esta solicitud de exhibición aún no ha sido aprobada.'], 400);
+            return response()->json(['error' => 'Esta solicitud de exhibición aún no ha sido aprobada.'], 400);
         }
 
         try {
@@ -170,6 +186,58 @@ class ArtworkDisplayDateController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
             return response()->json(['error' => 'Ha ocurrido un error al cancelar la fecha de exhibición.'], 500);
+        }
+    }
+
+    public function cancelAll($date)
+    {
+        Log::info('ArtworkDisplayDateController@cancelAll: Inicio', ['date' => $date]);
+        
+        $user = Auth::user();
+        
+        try {
+            // Parsear la fecha y asegurarse de que está en el formato correcto
+            $date = Carbon::parse($date)->format('Y-m-d');
+            Log::info('ArtworkDisplayDateController@cancelAll: Fecha parseada', ['formattedDate' => $date]);
+
+            // Obtener todas las fechas de exhibición para el día especificado
+            $displayDates = ArtworkDisplayDate::whereDate('display_date', $date)
+                ->where('is_approved', true);
+
+            // Si no es admin, solo puede cancelar sus propias exhibiciones
+            if (!$user->isAdmin()) {
+                $displayDates->where('user_id', $user->id);
+            }
+
+            $count = $displayDates->count();
+            Log::info('ArtworkDisplayDateController@cancelAll: Exhibiciones encontradas', ['count' => $count]);
+
+            if ($count === 0) {
+                Log::warning('ArtworkDisplayDateController@cancelAll: No hay exhibiciones para cancelar', ['date' => $date]);
+                return response()->json([
+                    'error' => 'No hay exhibiciones para cancelar en esta fecha.'
+                ], 404);
+            }
+
+            // Eliminar todas las exhibiciones encontradas
+            $displayDates->delete();
+            Log::info('ArtworkDisplayDateController@cancelAll: Exhibiciones eliminadas', ['count' => $count]);
+
+            return response()->json([
+                'message' => 'Se han cancelado ' . $count . ' exhibiciones correctamente.'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error cancelling all artwork display dates:', [
+                'date' => $date,
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'error' => 'Ha ocurrido un error al cancelar las exhibiciones.'
+            ], 500);
         }
     }
 } 

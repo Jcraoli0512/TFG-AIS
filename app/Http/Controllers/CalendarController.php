@@ -59,6 +59,7 @@ class CalendarController extends Controller
                 'description' => $displayDate->artwork->description,
                 'technique' => $displayDate->artwork->technique,
                 'is_owner' => Auth::check() && Auth::id() === $displayDate->artwork->user_id,
+                'is_admin' => Auth::check() && Auth::user()->isAdmin(),
                 'display_date_id' => $displayDate->id
             ];
         });

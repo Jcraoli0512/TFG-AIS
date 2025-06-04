@@ -31,77 +31,41 @@
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Solicitudes Pendientes</h3>
 
                     @if($requestsGrouped->count() > 0)
-                        @foreach($requestsGrouped as $groupKey => $requestsInGroup)
-                            @php
-                                $firstRequest = $requestsInGroup->first();
-                                $userId = $firstRequest->user->id;
-                                $userName = $firstRequest->user->name;
-                                $displayDate = \Carbon\Carbon::parse($firstRequest->display_date)->format('d/m/Y');
-                                $groupRequestId = $groupKey; // Usaremos la clave del grupo como identificador temporal del lote
-                            @endphp
-                            <div class="bg-gray-100 rounded-lg shadow-sm p-4 mb-6" data-group-id="{{ $groupRequestId }}">
-                                <div class="flex justify-between items-center mb-4 border-b pb-3">
-                                    <h4 class="text-md font-semibold text-gray-800">Solicitud de {{ $userName }} para el {{ $displayDate }}</h4>
-                                    <div>
-                                         {{-- Botones de Acción para el Lote --}}
-                                        <button type="button" 
-                                                onclick="approveBatch('{{ $groupRequestId }}')"
-                                                class="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 mr-2">
-                                            Aprobar Lote
-                                        </button>
-                                        <button type="button" 
-                                                onclick="rejectBatch('{{ $groupRequestId }}')"
-                                                class="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                                            Rechazar Lote
-                                        </button>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            @foreach($requestsGrouped as $groupKey => $requestsInGroup)
+                                @php
+                                    $firstRequest = $requestsInGroup->first();
+                                    $userId = $firstRequest->user->id;
+                                    $userName = $firstRequest->user->name;
+                                    $displayDate = \Carbon\Carbon::parse($firstRequest->display_date)->format('d/m/Y');
+                                    $groupRequestId = $groupKey;
+                                    $artworkCount = $requestsInGroup->count();
+                                @endphp
+                                <div class="bg-gray-100 rounded-lg shadow-sm p-4 cursor-pointer hover:bg-gray-200 transition-colors duration-200"
+                                     onclick="showArtworksModal('{{ $groupRequestId }}', '{{ $userName }}', '{{ $displayDate }}')"
+                                     data-group-id="{{ $groupRequestId }}">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <h4 class="text-md font-semibold text-gray-800">{{ $userName }}</h4>
+                                        <span class="text-sm text-gray-500">{{ $displayDate }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-gray-600">{{ $artworkCount }} obra(s)</span>
+                                        <div class="flex space-x-2">
+                                            <button type="button" 
+                                                    onclick="event.stopPropagation(); approveBatch('{{ $groupRequestId }}')"
+                                                    class="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                                Aprobar
+                                            </button>
+                                            <button type="button" 
+                                                    onclick="event.stopPropagation(); rejectBatch('{{ $groupRequestId }}')"
+                                                    class="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                                Rechazar
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-
-                                <div class="overflow-x-auto">
-                                    <table class="min-w-full divide-y divide-gray-200">
-                                        <thead class="bg-gray-50">
-                                            <tr>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Obra</th>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Solicitud</th>
-                                                 <th scope="col" class="relative px-6 py-3">
-                                                    <span class="sr-only">Acciones Individuales</span>
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="bg-white divide-y divide-gray-200">
-                                            @foreach($requestsInGroup as $request)
-                                                <tr data-request-id="{{ $request->id }}">
-                                                    <td class="px-6 py-4 whitespace-nowrap">
-                                                        <div class="flex items-center">
-                                                            <div class="flex-shrink-0 h-10 w-10">
-                                                                <img class="h-10 w-10 rounded-full object-cover" src="{{ $request->artwork->image_path ? asset('storage/' . $request->artwork->image_path) : asset('img/placeholder.jpg') }}" alt="Obra Imagen">
-                                                            </div>
-                                                            <div class="ml-4">
-                                                                <div class="text-sm font-medium text-gray-900">{{ $request->artwork->title }}</div>
-                                                                <div class="text-sm text-gray-500">{{ $request->artwork->technique }}</div>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        {{ $request->created_at->format('d/m/Y H:i') }}
-                                                    </td>
-                                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                        {{-- Botones de Acción Individual (opcional, si aún quieres control por obra) --}}
-                                                        {{-- Puedes mantener estos si quieres permitir aprobar/rechazar obras específicas dentro del lote --}}
-                                                        <button type="button" 
-                                                                onclick="approveRequest({{ $request->id }})"
-                                                                class="text-green-600 hover:text-green-900 mr-4">Aprobar Individual</button>
-                                                        <button type="button" 
-                                                                onclick="rejectRequest({{ $request->id }})"
-                                                                class="text-red-600 hover:text-red-900">Rechazar Individual</button>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        @endforeach
+                            @endforeach
+                        </div>
                     @else
                         <p class="text-gray-600">No hay solicitudes de exhibición pendientes.</p>
                     @endif
@@ -109,9 +73,6 @@
             </div>
         </div>
     </div>
-
-    {{-- Modales (para confirmación de aprobación/rechazo, mensajes, etc.) --}}
-    {{-- Puedes reutilizar los modales de éxito/error o crear nuevos si necesitas más control --}}
 
     {{-- Modal de Confirmación --}}
     <div id="confirmationModalAdmin" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
@@ -133,6 +94,25 @@
         </div>
     </div>
 
+    {{-- Modal de Obras --}}
+    <div id="artworksModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-medium text-gray-900" id="artworksModalTitle"></h3>
+                <button onclick="closeArtworksModal()" class="text-gray-400 hover:text-gray-500">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="mt-2 px-7 py-3">
+                <div id="artworksGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <!-- Las imágenes se cargarán aquí dinámicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 @push('scripts')
@@ -142,7 +122,6 @@
         const container = document.getElementById('async-message-container');
         if (!container) return;
 
-        // Determinar clases de estilo según el tipo de mensaje
         let bgColor, borderColor, textColor;
         if (type === 'success') {
             bgColor = 'bg-green-100';
@@ -153,7 +132,7 @@
             borderColor = 'border-red-400';
             textColor = 'text-red-700';
         } else if (type === 'warning') {
-             bgColor = 'bg-yellow-100';
+            bgColor = 'bg-yellow-100';
             borderColor = 'border-yellow-400';
             textColor = 'text-yellow-700';
         }
@@ -163,34 +142,34 @@
         messageDiv.setAttribute('role', 'alert');
         messageDiv.innerHTML = `<span class="block sm:inline">${message}</span>`;
 
-        // Limpiar mensajes anteriores y añadir el nuevo
         container.innerHTML = '';
         container.appendChild(messageDiv);
 
-        // Opcional: auto-ocultar el mensaje después de unos segundos
         setTimeout(() => {
             messageDiv.remove();
-        }, 5000); // Eliminar después de 5 segundos
+        }, 5000);
     }
 
-    // Referencias al modal de confirmación y sus botones
+    // Referencias a los modales
     const confirmationModalAdmin = document.getElementById('confirmationModalAdmin');
+    const artworksModal = document.getElementById('artworksModal');
     const confirmationModalTitle = document.getElementById('confirmationModalTitle');
     const confirmationModalMessage = document.getElementById('confirmationModalMessage');
+    const artworksModalTitle = document.getElementById('artworksModalTitle');
+    const artworksGrid = document.getElementById('artworksGrid');
     const cancelConfirmationButton = document.getElementById('cancelConfirmationButton');
     const confirmActionButton = document.getElementById('confirmActionButton');
 
-    let currentAction = null; // Para almacenar la acción a realizar (aprobar/rechazar)
-    let currentRequestId = null; // Para almacenar el ID de la solicitud
+    let currentAction = null;
+    let currentRequestId = null;
 
-    // Función para mostrar el modal de confirmación
+    // Funciones para el modal de confirmación
     function showConfirmationModalAdmin(title, message, requestId, action) {
         confirmationModalTitle.textContent = title;
         confirmationModalMessage.textContent = message;
         currentRequestId = requestId;
-        currentAction = action; // 'approve' o 'reject'
+        currentAction = action;
         
-        // Ajustar color del botón de confirmar según la acción
         if (action === 'approve') {
             confirmActionButton.classList.remove('bg-red-600', 'hover:bg-red-700', 'focus:ring-red-300');
             confirmActionButton.classList.add('bg-green-600', 'hover:bg-green-700', 'focus:ring-green-300');
@@ -203,46 +182,97 @@
         document.body.style.overflow = 'hidden';
     }
 
-    // Función para cerrar el modal de confirmación
     function closeConfirmationModalAdmin() {
         confirmationModalAdmin.classList.add('hidden');
         document.body.style.overflow = '';
-        // Resetear variables
         currentAction = null;
         currentRequestId = null;
     }
 
-    // Listener para el botón Cancelar del modal
-    cancelConfirmationButton.addEventListener('click', function() {
-        closeConfirmationModalAdmin();
-    });
+    // Funciones para el modal de obras
+    function showArtworksModal(groupKey, userName, displayDate) {
+        artworksModalTitle.textContent = `Obras de ${userName} para el ${displayDate}`;
+        artworksGrid.innerHTML = ''; // Limpiar el grid
 
-    // Modificar el listener del botón de Confirmar para manejar acciones de Lote
+        // Obtener las obras del grupo
+        const groupElement = document.querySelector(`div[data-group-id="${groupKey}"]`);
+        if (!groupElement) return;
+
+        // Aquí deberías hacer una petición al servidor para obtener las obras
+        // Por ahora, mostraremos un mensaje de carga
+        artworksGrid.innerHTML = '<div class="col-span-full text-center">Cargando obras...</div>';
+
+        // Mostrar el modal
+        artworksModal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+
+        // Hacer la petición al servidor
+        fetch(`/admin/exhibition-requests/${groupKey}/artworks`)
+            .then(response => response.json())
+            .then(data => {
+                artworksGrid.innerHTML = ''; // Limpiar el mensaje de carga
+                data.artworks.forEach(artwork => {
+                    const artworkDiv = document.createElement('div');
+                    artworkDiv.className = 'relative group';
+                    artworkDiv.innerHTML = `
+                        <div class="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-lg bg-gray-200">
+                            <img src="${artwork.image_path}" alt="${artwork.title}" class="h-full w-full object-cover object-center">
+                        </div>
+                        <div class="mt-2">
+                            <h3 class="text-sm font-medium text-gray-900">${artwork.title}</h3>
+                            <p class="text-sm text-gray-500">${artwork.technique}</p>
+                        </div>
+                    `;
+                    artworksGrid.appendChild(artworkDiv);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading artworks:', error);
+                artworksGrid.innerHTML = '<div class="col-span-full text-center text-red-600">Error al cargar las obras</div>';
+            });
+    }
+
+    function closeArtworksModal() {
+        artworksModal.classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+
+    // Event Listeners
+    cancelConfirmationButton.addEventListener('click', closeConfirmationModalAdmin);
     confirmActionButton.addEventListener('click', function() {
         if (currentAction && currentRequestId !== null) {
-            if (currentAction === 'approve') {
-                executeApprovedRequest(currentRequestId);
-            } else if (currentAction === 'reject') {
-                executeRejectRequest(currentRequestId);
-            } else if (currentAction === 'approveBatch') {
-                 executeApproveBatch(currentRequestId); // currentRequestId aquí es el groupKey
+            if (currentAction === 'approveBatch') {
+                executeApproveBatch(currentRequestId);
             } else if (currentAction === 'rejectBatch') {
-                 executeRejectBatch(currentRequestId); // currentRequestId aquí es el groupKey
+                executeRejectBatch(currentRequestId);
             }
         }
         closeConfirmationModalAdmin();
     });
 
-    // Cerrar modal haciendo clic fuera
-    confirmationModalAdmin.addEventListener('click', function(event) {
-        if (event.target === confirmationModalAdmin) {
-            closeConfirmationModalAdmin();
-        }
-    });
+    // Funciones de aprobación/rechazo
+    function approveBatch(groupKey) {
+        showConfirmationModalAdmin('Aprobar Solicitud', '¿Estás seguro de que deseas aprobar todas las obras de esta solicitud?', groupKey, 'approveBatch');
+    }
 
-    // Funciones que ejecutan la petición real (anteriormente dentro del confirm)
-    function executeApprovedRequest(id) {
-        fetch(`/admin/exhibition-requests/${id}/approve`, {
+    function rejectBatch(groupKey) {
+        showConfirmationModalAdmin('Rechazar Solicitud', '¿Estás seguro de que deseas rechazar todas las obras de esta solicitud?', groupKey, 'rejectBatch');
+    }
+
+    function executeApproveBatch(groupKey) {
+        // Extraer userId y date del groupKey
+        const parts = groupKey.split('-');
+        const userId = parts[0];
+        const date = parts.slice(1).join('-'); // Unir las partes restantes para formar la fecha
+        
+        console.log('Aprobando solicitud:', {
+            groupKey,
+            userId,
+            date,
+            url: `/admin/exhibition-requests/batch/${userId}/${date}/approve`
+        });
+        
+        fetch(`/admin/exhibition-requests/batch/${userId}/${date}/approve`, {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
@@ -251,131 +281,48 @@
             }
         })
         .then(response => {
-            if (!response.ok) {
-                 return response.json().then(data => {
-                     const errorMessage = data.message || data.error || 'Error desconocido al aprobar la solicitud';
-                     throw new Error(errorMessage);
-                 }).catch(() => {
-                     throw new Error(`Error ${response.status}: ${response.statusText}`);
-                 });
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                const row = document.querySelector(`tr[data-request-id="${id}"]`);
-                if (row) {
-                    row.remove();
-                }
-                showAsyncMessage(data.message || 'Solicitud aprobada correctamente', 'success');
-            } else {
-                showAsyncMessage(data.message || 'Error al aprobar la solicitud', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error approving request:', error);
-            showAsyncMessage('Error al aprobar la solicitud: ' + error.message, 'error');
-        });
-    }
-
-    function executeRejectRequest(requestId) {
-        fetch(`/admin/exhibition-requests/${requestId}/reject`, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => {
+            console.log('Response status:', response.status);
             if (!response.ok) {
                 return response.json().then(data => {
-                    const errorMessage = data.message || data.error || 'Error desconocido al rechazar la solicitud';
-                     throw new Error(errorMessage);
-                }).catch(() => {
-                     throw new Error(`Error ${response.status}: ${response.statusText}`);
+                    console.error('Error response:', data);
+                    throw new Error(data.message || `Error ${response.status}: ${response.statusText}`);
                 });
             }
             return response.json();
         })
         .then(data => {
+            console.log('Success response:', data);
             if (data.success) {
-                const row = document.querySelector(`tr[data-request-id="${requestId}"]`);
-                if (row) {
-                    row.remove();
+                const groupElement = document.querySelector(`div[data-group-id="${groupKey}"]`);
+                if (groupElement) {
+                    groupElement.remove();
                 }
-                showAsyncMessage(data.message || 'Solicitud rechazada correctamente', 'success');
+                showAsyncMessage(data.message, 'success');
             } else {
-                showAsyncMessage(data.message || 'Error al rechazar la solicitud', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error rejecting request:', error);
-            showAsyncMessage(error.message, 'error');
-        });
-    }
-
-    // Modificar las funciones originales para mostrar el modal en su lugar
-    function approveRequest(id) {
-        showConfirmationModalAdmin('Aprobar Solicitud Individual', '¿Estás seguro de que deseas aprobar esta solicitud de exhibición individual?', id, 'approve');
-    }
-
-    function rejectRequest(requestId) {
-        showConfirmationModalAdmin('Rechazar Solicitud Individual', '¿Estás seguro de que deseas rechazar esta solicitud de exhibición individual?', requestId, 'reject');
-    }
-
-    // --- Funciones para acciones de Lote ---
-
-    function approveBatch(groupKey) {
-         showConfirmationModalAdmin('Aprobar Lote', '¿Estás seguro de que deseas aprobar todas las solicitudes para este usuario y fecha?', groupKey, 'approveBatch');
-    }
-
-     function rejectBatch(groupKey) {
-         showConfirmationModalAdmin('Rechazar Lote', '¿Estás seguro de que deseas rechazar todas las solicitudes para este usuario y fecha?', groupKey, 'rejectBatch');
-    }
-
-    // Función para ejecutar la aprobación del lote
-    function executeApproveBatch(groupKey) {
-        fetch(`/admin/exhibition-requests/${groupKey}/approve`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                 return response.json().then(data => {
-                     const errorMessage = data.message || data.error || 'Error desconocido al aprobar el lote';
-                     throw new Error(errorMessage);
-                 }).catch(() => {
-                     throw new Error(`Error ${response.status}: ${response.statusText}`);
-                 });
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                // Remove the entire group block from the DOM
-                const groupBlock = document.querySelector(`div[data-group-id="${groupKey}"]`);
-                if (groupBlock) {
-                    groupBlock.remove();
-                }
-                showAsyncMessage(data.message || 'Lote de solicitudes aprobado correctamente', 'success');
-            } else {
-                showAsyncMessage(data.message || 'Error al aprobar el lote', 'error');
+                console.error('Error data:', data);
+                showAsyncMessage(data.message || 'Error al aprobar la solicitud', 'error');
             }
         })
         .catch(error => {
             console.error('Error approving batch:', error);
-            showAsyncMessage('Error al aprobar el lote: ' + error.message, 'error');
+            showAsyncMessage('Error al aprobar la solicitud: ' + error.message, 'error');
         });
     }
 
-    // Función para ejecutar el rechazo del lote
-     function executeRejectBatch(groupKey) {
-        fetch(`/admin/exhibition-requests/${groupKey}/reject`, {
+    function executeRejectBatch(groupKey) {
+        // Extraer userId y date del groupKey
+        const parts = groupKey.split('-');
+        const userId = parts[0];
+        const date = parts.slice(1).join('-'); // Unir las partes restantes para formar la fecha
+        
+        console.log('Rechazando solicitud:', {
+            groupKey,
+            userId,
+            date,
+            url: `/admin/exhibition-requests/batch/${userId}/${date}/reject`
+        });
+        
+        fetch(`/admin/exhibition-requests/batch/${userId}/${date}/reject`, {
             method: 'DELETE',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
@@ -384,33 +331,32 @@
             }
         })
         .then(response => {
+            console.log('Response status:', response.status);
             if (!response.ok) {
-                 return response.json().then(data => {
-                     const errorMessage = data.message || data.error || 'Error desconocido al rechazar el lote';
-                     throw new Error(errorMessage);
-                 }).catch(() => {
-                     throw new Error(`Error ${response.status}: ${response.statusText}`);
-                 });
+                return response.json().then(data => {
+                    console.error('Error response:', data);
+                    throw new Error(data.message || `Error ${response.status}: ${response.statusText}`);
+                });
             }
             return response.json();
         })
         .then(data => {
+            console.log('Success response:', data);
             if (data.success) {
-                // Remove the entire group block from the DOM
-                const groupBlock = document.querySelector(`div[data-group-id="${groupKey}"]`);
-                if (groupBlock) {
-                    groupBlock.remove();
+                const groupElement = document.querySelector(`div[data-group-id="${groupKey}"]`);
+                if (groupElement) {
+                    groupElement.remove();
                 }
-                 showAsyncMessage(data.message || 'Lote de solicitudes rechazado correctamente', 'success');
+                showAsyncMessage(data.message, 'success');
             } else {
-                showAsyncMessage(data.message || 'Error al rechazar el lote', 'error');
+                console.error('Error data:', data);
+                showAsyncMessage(data.message || 'Error al rechazar la solicitud', 'error');
             }
         })
         .catch(error => {
             console.error('Error rejecting batch:', error);
-            showAsyncMessage(error.message, 'error');
+            showAsyncMessage('Error al rechazar la solicitud: ' + error.message, 'error');
         });
     }
-
 </script>
 @endpush 
