@@ -531,12 +531,20 @@ class DashboardController extends Controller
     {
         \Log::info('Iniciando getGroupArtworks con groupKey: ' . $groupKey);
 
+        // Validar que el groupKey tenga el formato esperado (por ejemplo, "userId-YYYY-MM-DD")
+        if (!preg_match('/^\d+-\d{4}-\d{2}-\d{2}(?:\s.*)?$/', $groupKey)) {
+            \Log::warning('getGroupArtworks: groupKey con formato inválido: "' . $groupKey . '"');
+            return response()->json([
+                'success' => false,
+                'message' => 'El identificador de grupo ("groupKey") no tiene el formato esperado (debe ser "userId-YYYY-MM-DD").'
+            ], 400);
+        }
+
         try {
             // Extraer userId y displayDate del groupKey
             $parts = explode('-', $groupKey);
             $userId = $parts[0];
-            
-            // Reconstruir la fecha correctamente
+            // Reconstruir la fecha (asumiendo que el formato es "userId-YYYY-MM-DD")
             $displayDate = $parts[1] . '-' . $parts[2] . '-' . explode(' ', $parts[3])[0];
             
             \Log::info('userId: ' . $userId . ', displayDate: ' . $displayDate);

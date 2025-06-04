@@ -107,6 +107,7 @@ Route::middleware(['auth', \App\Http\Middleware\AdminMiddleware::class])->prefix
         Route::post('/batch/{userId}/{date}/approve', [DashboardController::class, 'approveBatch'])->name('exhibition-requests.approve-batch');
         Route::delete('/batch/{userId}/{date}/reject', [DashboardController::class, 'rejectBatch'])->name('exhibition-requests.reject-batch');
         Route::get('/batch/{userId}/{date}/artworks', [DashboardController::class, 'getGroupArtworks'])->name('exhibition-requests.get-group-artworks');
+        Route::get('/{groupKey}/artworks', [DashboardController::class, 'getGroupArtworks'])->name('exhibition-requests.group-artworks');
     });
 });
 

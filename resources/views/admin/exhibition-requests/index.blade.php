@@ -191,6 +191,7 @@
 
     // Funciones para el modal de obras
     function showArtworksModal(groupKey, userName, displayDate) {
+        console.log("showArtworksModal: groupKey=" + groupKey + ", userName=" + userName + ", displayDate=" + displayDate);
         artworksModalTitle.textContent = `Obras de ${userName} para el ${displayDate}`;
         artworksGrid.innerHTML = ''; // Limpiar el grid
 
@@ -198,8 +199,8 @@
         const groupElement = document.querySelector(`div[data-group-id="${groupKey}"]`);
         if (!groupElement) return;
 
-        // Aquí deberías hacer una petición al servidor para obtener las obras
-        // Por ahora, mostraremos un mensaje de carga
+        // Aquí se hace una petición al servidor para obtener las obras
+        // Por ahora, se muestra un mensaje de carga
         artworksGrid.innerHTML = '<div class="col-span-full text-center">Cargando obras...</div>';
 
         // Mostrar el modal
@@ -208,27 +209,38 @@
 
         // Hacer la petición al servidor
         fetch(`/admin/exhibition-requests/${groupKey}/artworks`)
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.message || `Error ${response.status}: ${response.statusText}`);
+                    });
+                }
+                return response.json();
+            })
             .then(data => {
-                artworksGrid.innerHTML = ''; // Limpiar el mensaje de carga
-                data.artworks.forEach(artwork => {
-                    const artworkDiv = document.createElement('div');
-                    artworkDiv.className = 'relative group';
-                    artworkDiv.innerHTML = `
-                        <div class="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-lg bg-gray-200">
-                            <img src="${artwork.image_path}" alt="${artwork.title}" class="h-full w-full object-cover object-center">
-                        </div>
-                        <div class="mt-2">
-                            <h3 class="text-sm font-medium text-gray-900">${artwork.title}</h3>
-                            <p class="text-sm text-gray-500">${artwork.technique}</p>
-                        </div>
-                    `;
-                    artworksGrid.appendChild(artworkDiv);
-                });
+                if (data.success) {
+                    artworksGrid.innerHTML = ''; // Limpiar el mensaje de carga
+                    data.artworks.forEach(artwork => {
+                        const artworkDiv = document.createElement('div');
+                        artworkDiv.className = 'relative group';
+                        artworkDiv.innerHTML = `
+                            <div class="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-lg bg-gray-200">
+                                <img src="${artwork.image_path}" alt="${artwork.title}" class="h-full w-full object-cover object-center">
+                            </div>
+                            <div class="mt-2">
+                                <h3 class="text-sm font-medium text-gray-900">${artwork.title}</h3>
+                                <p class="text-sm text-gray-500">${artwork.technique}</p>
+                            </div>
+                        `;
+                        artworksGrid.appendChild(artworkDiv);
+                    });
+                } else {
+                    throw new Error(data.message || 'Error al cargar las obras (respuesta no exitosa)');
+                }
             })
             .catch(error => {
                 console.error('Error loading artworks:', error);
-                artworksGrid.innerHTML = '<div class="col-span-full text-center text-red-600">Error al cargar las obras</div>';
+                artworksGrid.innerHTML = '<div class="col-span-full text-center text-red-600">' + (error.message || 'Error al cargar las obras') + '</div>';
             });
     }
 
