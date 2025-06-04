@@ -72,13 +72,14 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/api/artwork-display-dates/{displayDate}/approve', [ArtworkDisplayDateController::class, 'approve'])
         ->middleware(['admin'])
         ->name('artwork-display-dates.approve');
+    Route::delete('/api/artwork-display-dates/{displayDate}/cancel', [ArtworkDisplayDateController::class, 'cancel'])->name('artwork-display-dates.cancel');
 });
-
-// Rutas para la gestión de obras (CRUD)
-Route::resource('artworks', ArtworkController::class)->middleware(['auth']);
 
 // Nueva ruta para obtener la vista parcial de selección de obras
 Route::get('/artworks/selection-partial', [ArtworkController::class, 'getArtworkSelectionPartial'])->middleware(['auth'])->name('artworks.selection-partial');
+
+// Rutas para la gestión de obras (CRUD)
+Route::resource('artworks', ArtworkController::class)->middleware(['auth']);
 
 // Exhibición 3D
 Route::get('/exhibicion', function () {
@@ -91,7 +92,7 @@ Route::get('/exhibicion', function () {
 |--------------------------------------------------------------------------
 */
 
-Route::group(['middleware' => ['web', 'auth', \App\Http\Middleware\AdminMiddleware::class], 'prefix' => 'admin', 'as' => 'admin.'], function () {
+Route::middleware(['auth', \App\Http\Middleware\AdminMiddleware::class])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/users', [DashboardController::class, 'users'])->name('users.index');
     Route::get('/users/{user}/edit', [DashboardController::class, 'editUser'])->name('users.edit');
@@ -99,6 +100,10 @@ Route::group(['middleware' => ['web', 'auth', \App\Http\Middleware\AdminMiddlewa
     Route::delete('/users/{user}', [DashboardController::class, 'deleteUser'])->name('users.delete');
     Route::delete('/users/{user}/artworks/{artwork}', [DashboardController::class, 'deleteUserArtwork'])->name('admin.users.artworks.delete');
     Route::delete('/users/{user}/panoramic-image', [DashboardController::class, 'deletePanoramicImage'])->name('admin.users.panoramic.delete');
+
+    // Exhibition requests routes
+    Route::get('/exhibition-requests', [DashboardController::class, 'exhibitionRequests'])->name('exhibition-requests.index');
+    Route::post('/exhibition-requests/{id}/approve', [DashboardController::class, 'approveRequest'])->name('exhibition-requests.approve');
 });
 
 /*

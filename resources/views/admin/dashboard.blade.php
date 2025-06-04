@@ -87,6 +87,22 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Usuarios -->
+            <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold mb-4">Usuarios</h3>
+                <div class="space-y-2">
+                    <a href="{{ route('admin.users.index') }}" class="block text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300">
+                        Gestionar Usuarios
+                    </a>
+                    <a href="{{ route('admin.exhibition-requests.index') }}" class="block text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300">
+                        Solicitudes de Exhibición
+                    </a>
+                    <a href="#" class="block text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300">
+                        Estadísticas de Usuarios
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 @endsection 

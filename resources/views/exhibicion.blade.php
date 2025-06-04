@@ -129,40 +129,65 @@
             createFloor(mainRoomWidth/2 + hallwayWidth/2, 0, hallwayWidth, hallwayDepth);
             createCeiling(mainRoomWidth/2 + hallwayWidth/2, 0, hallwayWidth, hallwayDepth);
 
-            // Añadir cuadros en las paredes
-            const paintings = [
+            // Definir las posiciones y rotaciones para las obras
+            const artworkPositions = [
                 // Sala principal
-                { position: [0, mainRoomHeight/2, -mainRoomDepth/2 + 0.5], rotation: [0, 0, 0], size: [3, 4], image: 'https://picsum.photos/400/500' },
-                { position: [0, mainRoomHeight/2, mainRoomDepth/2 - 0.5], rotation: [0, Math.PI, 0], size: [3, 4], image: 'https://picsum.photos/401/500' },
-                { position: [-mainRoomWidth/2 + 0.5, mainRoomHeight/2, 0], rotation: [0, Math.PI/2, 0], size: [3, 4], image: 'https://picsum.photos/402/500' },
-                { position: [mainRoomWidth/2 - 0.5, mainRoomHeight/2, 0], rotation: [0, -Math.PI/2, 0], size: [3, 4], image: 'https://picsum.photos/403/500' },
-                
+                { position: [0, mainRoomHeight/2, -mainRoomDepth/2 + 0.5], rotation: [0, 0, 0], size: [3, 4] }, // Pared norte
+                { position: [0, mainRoomHeight/2, mainRoomDepth/2 - 0.5], rotation: [0, Math.PI, 0], size: [3, 4] },  // Pared sur
+                { position: [-mainRoomWidth/2 + 0.5, mainRoomHeight/2, 0], rotation: [0, Math.PI/2, 0], size: [3, 4] }, // Pared oeste
+                { position: [mainRoomWidth/2 - 0.5, mainRoomHeight/2, 0], rotation: [0, -Math.PI/2, 0], size: [3, 4] },  // Pared este
+
                 // Pasillo izquierdo
-                { position: [-mainRoomWidth/2 - hallwayWidth/2, hallwayHeight/2, -hallwayDepth/2 + 0.5], rotation: [0, 0, 0], size: [2, 3], image: 'https://picsum.photos/404/500' },
-                { position: [-mainRoomWidth/2 - hallwayWidth/2, hallwayHeight/2, hallwayDepth/2 - 0.5], rotation: [0, Math.PI, 0], size: [2, 3], image: 'https://picsum.photos/405/500' },
-                { position: [-mainRoomWidth/2 - hallwayWidth + 0.5, hallwayHeight/2, 0], rotation: [0, Math.PI/2, 0], size: [2, 3], image: 'https://picsum.photos/406/500' },
-                
+                { position: [-mainRoomWidth/2 - hallwayWidth/2, hallwayHeight/2, -hallwayDepth/2 + 0.5], rotation: [0, 0, 0], size: [2, 3] },
+                { position: [-mainRoomWidth/2 - hallwayWidth/2, hallwayHeight/2, hallwayDepth/2 - 0.5], rotation: [0, Math.PI, 0], size: [2, 3] },
+                { position: [-mainRoomWidth/2 - hallwayWidth + 0.5, hallwayHeight/2, 0], rotation: [0, Math.PI/2, 0], size: [2, 3] },
+
                 // Pasillo derecho
-                { position: [mainRoomWidth/2 + hallwayWidth/2, hallwayHeight/2, -hallwayDepth/2 + 0.5], rotation: [0, 0, 0], size: [2, 3], image: 'https://picsum.photos/407/500' },
-                { position: [mainRoomWidth/2 + hallwayWidth/2, hallwayHeight/2, hallwayDepth/2 - 0.5], rotation: [0, Math.PI, 0], size: [2, 3], image: 'https://picsum.photos/408/500' },
-                { position: [mainRoomWidth/2 + hallwayWidth - 0.5, hallwayHeight/2, 0], rotation: [0, -Math.PI/2, 0], size: [2, 3], image: 'https://picsum.photos/409/500' }
+                { position: [mainRoomWidth/2 + hallwayWidth/2, hallwayHeight/2, -hallwayDepth/2 + 0.5], rotation: [0, 0, 0], size: [2, 3] },
+                { position: [mainRoomWidth/2 + hallwayWidth/2, hallwayHeight/2, hallwayDepth/2 - 0.5], rotation: [0, Math.PI, 0], size: [2, 3] },
+                { position: [mainRoomWidth/2 + hallwayWidth - 0.5, hallwayHeight/2, 0], rotation: [0, -Math.PI/2, 0], size: [2, 3] }
             ];
 
-            paintings.forEach(painting => {
-                const texture = new THREE.TextureLoader().load(painting.image);
-                texture.minFilter = THREE.LinearFilter;
-                texture.magFilter = THREE.LinearFilter;
-                const material = new THREE.MeshPhongMaterial({ 
-                    map: texture,
-                    side: THREE.DoubleSide,
-                    transparent: true
+            // Función para añadir una obra a la escena 3D
+            function addArtworkToScene(artwork, positionData) {
+                const textureLoader = new THREE.TextureLoader();
+                textureLoader.load(artwork.url, function(texture) {
+                    texture.minFilter = THREE.LinearFilter;
+                    texture.magFilter = THREE.LinearFilter;
+                    const material = new THREE.MeshPhongMaterial({
+                        map: texture,
+                        side: THREE.DoubleSide,
+                        transparent: true // Asegúrate de que el material permita transparencia si la imagen la tiene
+                    });
+                    const geometry = new THREE.PlaneGeometry(...positionData.size);
+                    const mesh = new THREE.Mesh(geometry, material);
+                    mesh.position.set(...positionData.position);
+                    mesh.rotation.set(...positionData.rotation);
+                    scene.add(mesh);
+                }, undefined, function(err) {
+                    console.error('Error loading texture for artwork:', artwork.title, err);
+                    // Opcional: añadir un placeholder o un indicador de error en la escena
                 });
-                const geometry = new THREE.PlaneGeometry(...painting.size);
-                const mesh = new THREE.Mesh(geometry, material);
-                mesh.position.set(...painting.position);
-                mesh.rotation.set(...painting.rotation);
-                scene.add(mesh);
-            });
+            }
+
+            // Obtener y mostrar las obras del día actual
+            const today = new Date().toISOString().split('T')[0];
+            fetch(`/api/gallery-images/${today}`)
+                .then(response => response.json())
+                .then(artworks => {
+                    console.log('Artworks for today:', artworks);
+
+                    artworks.forEach((artwork, index) => {
+                        if (index < artworkPositions.length) { // Usar las posiciones predefinidas
+                            addArtworkToScene(artwork, artworkPositions[index]);
+                        } else {
+                            console.warn('Not enough predefined positions for all artworks.', artwork.title);
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching artworks for exhibition:', error);
+                });
 
             // Posicionar cámara
             camera.position.set(0, 1.7, 0);

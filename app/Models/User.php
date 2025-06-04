@@ -73,6 +73,11 @@ class User extends Authenticatable
         return $this->hasMany(Exhibition::class);
     }
 
+    public function images()
+    {
+        return $this->hasMany(Image::class);
+    }
+
     public function isAdmin()
     {
         Log::info('User::isAdmin', [

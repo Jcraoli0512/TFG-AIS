@@ -47,12 +47,14 @@
                             <label for="display_date" class="block text-sm font-medium text-gray-700">Fecha de exhibición</label>
                             <input type="date" id="display_date" name="display_date" 
                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                   min="{{ date('Y-m-d', strtotime('+1 day')) }}">
+                                   min="{{ date('Y-m-d') }}">
                         </div>
-                        <button type="submit" 
-                                class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            Solicitar fecha
-                        </button>
+
+                        <div>
+                            <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                Solicitar Exhibición
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -85,7 +87,7 @@
         </div>
     </div>
 
-    <!-- Modal para mostrar detalles del evento -->
+    {{-- Modal para mostrar detalles del evento --}}
     <div id="eventModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
         <div class="bg-white rounded-lg p-6 max-w-2xl w-full mx-4">
             <div class="mb-4">
@@ -100,6 +102,43 @@
             </div>
         </div>
     </div>
+
+    {{-- Nuevo Modal para Ampliar Imagen de Obra --}}
+    <div id="enlargeImageModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full hidden z-[100]"> {{-- Use a higher z-index --}}
+        <div class="relative top-10 mx-auto p-4 max-w-4xl w-full">
+            <div class="bg-white rounded-lg shadow-xl overflow-hidden">
+                <div class="relative">
+                    <img id="enlargedArtworkImage" src="" alt="Imagen Ampliada" class="w-full h-auto max-h-[80vh] object-contain mx-auto">
+                    {{-- Close button position over the image/container --}}
+                    <button type="button" class="absolute top-2 right-2 text-white bg-black bg-opacity-50 rounded-full p-1 hover:bg-opacity-75 focus:outline-none close-enlarge-image-modal">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Modal para mostrar obras exhibidas --}}
+    <div id="exhibitedArtworksModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 hidden z-[9999]">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-4 sticky top-0 bg-white z-10 pb-2">
+                        <h3 class="text-lg font-medium text-gray-900" id="exhibitedArtworksTitle">Obras Exhibidas</h3>
+                        <button type="button" onclick="closeExhibitedArtworksModal()" class="text-gray-400 hover:text-gray-500">
+                            <span class="sr-only">Cerrar</span>
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="exhibitedArtworksContent" class="space-y-4">
+                        {{-- El contenido se llenará dinámicamente --}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
@@ -109,6 +148,8 @@
     </script>
     <script>
         console.log('Calendar script loaded'); // Debug: Check if calendar script block loads
+
+        let calendar; // Declare calendar variable in a broader scope
 
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Calendar DOM fully loaded'); // Debug: Check if DOMContentLoaded fires
@@ -121,7 +162,7 @@
                 return; // Stop execution if element is not found
             }
 
-            const calendar = new FullCalendar.Calendar(calendarEl, {
+            calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
                 locale: 'es',
                 headerToolbar: {
@@ -129,15 +170,54 @@
                     center: 'title',
                     right: 'dayGridMonth,timeGridWeek,timeGridDay'
                 },
+                buttonText: {
+                    today: 'Hoy',
+                    month: 'Mes',
+                    week: 'Semana',
+                    day: 'Día'
+                },
                 events: '/api/calendar-events',
                 eventClick: function(info) {
-                    if (info.event.extendedProps.type === 'artwork') {
-                        loadGalleryImages(info.event.start);
-                    }
+                    showExhibitedArtworks(info.event.start);
                 },
                 dateClick: function(info) {
+                    // Actualizar el campo de fecha en el formulario
+                    document.getElementById('display_date').value = info.dateStr;
+                    // Cargar las imágenes de la galería para esta fecha
                     loadGalleryImages(info.date);
-                }
+                },
+                eventDidMount: function(info) {
+                    // Añadir tooltip con la descripción
+                    info.el.title = info.event.extendedProps.description;
+                },
+                // Traducciones adicionales
+                dayHeaderFormat: { weekday: 'long' },
+                titleFormat: { year: 'numeric', month: 'long' },
+                allDayText: 'Todo el día',
+                noEventsText: 'No hay eventos',
+                moreLinkText: 'más',
+                weekText: 'Sem.',
+                weekNumbersTitle: 'S',
+                firstDay: 1, // Comienza la semana en lunes
+                // Traducciones de los meses
+                monthNames: [
+                    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+                ],
+                // Traducciones de los meses cortos
+                monthNamesShort: [
+                    'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
+                    'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'
+                ],
+                // Traducciones de los días de la semana
+                dayNames: [
+                    'Domingo', 'Lunes', 'Martes', 'Miércoles',
+                    'Jueves', 'Viernes', 'Sábado'
+                ],
+                // Traducciones de los días de la semana cortos
+                dayNamesShort: [
+                    'Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'
+                ]
             });
             calendar.render();
             console.log('FullCalendar rendered'); // Debug: Check if render is called
@@ -208,15 +288,82 @@
         const selectedArtworkIdsInput = document.getElementById('selectedArtworkIdsInput');
         const selectedArtworksDisplay = document.getElementById('selectedArtworksDisplay');
 
+        // Function to handle click on artwork image in the selection modal to enlarge
+        function handleArtworkImageClick(event) {
+            const clickedImage = event.target;
+            if (clickedImage.tagName === 'IMG') {
+                const imageUrl = clickedImage.src;
+                openEnlargeImageModal(imageUrl);
+            }
+        }
+
+        // Attach event listeners to artwork images in the selection modal body
+        // This function will be called after the artwork selection partial is loaded
+        function attachImageEnlargeListeners() {
+            const artworkImages = artworkSelectionModalBody.querySelectorAll('#artworkSelectionModalBody img');
+            artworkImages.forEach(img => {
+                img.style.cursor = 'pointer'; // Add a pointer cursor to indicate clickability
+                img.addEventListener('click', handleArtworkImageClick);
+            });
+             console.log('Image enlarge listeners attached', artworkImages.length);
+        }
+
+        // Function to open the enlarge image modal
+        const enlargeImageModal = document.getElementById('enlargeImageModal');
+        const enlargedArtworkImage = document.getElementById('enlargedArtworkImage');
+
+        function openEnlargeImageModal(imageUrl) {
+            enlargedArtworkImage.src = imageUrl;
+            enlargeImageModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+
+        // Function to close the enlarge image modal
+        function closeEnlargeImageModal() {
+            enlargeImageModal.classList.add('hidden');
+            enlargedArtworkImage.src = ''; // Clear the image source
+            document.body.style.overflow = ''; // Restore background scrolling
+        }
+
+        // Handle close button click for enlarge image modal
+        const closeEnlargeImageButtons = enlargeImageModal.querySelectorAll('.close-enlarge-image-modal');
+        closeEnlargeImageButtons.forEach(button => {
+            button.addEventListener('click', closeEnlargeImageModal);
+        });
+
+        // Handle click outside the enlarge image modal content to close it
+        if (enlargeImageModal) {
+             enlargeImageModal.addEventListener('click', function(event) {
+                const isClickInsideModalContent = event.target.closest('.relative.top-10.mx-auto'); // Selects the modal content div
+                if (event.target === this && !isClickInsideModalContent) {
+                    closeEnlargeImageModal();
+                }
+            });
+        }
+
         // Función para abrir el modal de selección de obras
         if (openArtworkSelectionModalButton) {
             openArtworkSelectionModalButton.addEventListener('click', function() {
+                console.log('Opening artwork selection modal'); // Debug log
                 artworkSelectionModal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden'; // Prevent scrolling on body
+
                 // Cargar la lista de obras en el cuerpo del modal
+                artworkSelectionModalBody.innerHTML = '<p>Cargando obras...</p>'; // Show loading
+
                 fetch('{{ route('artworks.selection-partial') }}')
-                    .then(response => response.text())
+                    .then(response => {
+                        if (!response.ok) {
+                            // Log the error response status
+                            console.error('Error response from artwork selection partial:', response.status, response.statusText);
+                             throw new Error('Network response was not ok ' + response.statusText);
+                        }
+                        return response.text();
+                    })
                     .then(html => {
                         artworkSelectionModalBody.innerHTML = html;
+                        console.log('Artwork selection partial loaded successfully'); // Debug log
+                        attachImageEnlargeListeners(); // Attach listeners after content is loaded
                     })
                     .catch(error => {
                         console.error('Error al cargar la lista de obras:', error);
@@ -227,7 +374,9 @@
 
         // Función para cerrar el modal de selección de obras
         function closeArtworkSelectionModal() {
+            console.log('Closing artwork selection modal'); // Debug log
             artworkSelectionModal.classList.add('hidden');
+            document.body.style.overflow = ''; // Restore scrolling on body
         }
 
         // Manejar clics en el botón de cerrar del modal
@@ -237,11 +386,16 @@
         });
 
         // Manejar clic fuera del modal para cerrarlo
-        window.addEventListener('click', function(event) {
-            if (event.target === artworkSelectionModal) {
-                closeArtworkSelectionModal();
-            }
-        });
+        // Using event delegation on the modal itself for clicks outside the content
+        if (artworkSelectionModal) {
+            artworkSelectionModal.addEventListener('click', function(event) {
+                // Check if the click target is the modal backdrop itself, not the modal content
+                const isClickInsideModalContent = event.target.closest('.relative.top-20.mx-auto'); // Selects the modal content div
+                if (event.target === this && !isClickInsideModalContent) {
+                    closeArtworkSelectionModal();
+                }
+            });
+        }
 
         // Manejar clic en el botón de confirmar selección
         if (saveArtworkSelectionButton) {
@@ -313,7 +467,9 @@
             .then(data => {
                 if (data.message) {
                     alert(data.message);
-                    calendar.refetchEvents();
+                    if (calendar) { // Check if calendar is defined before calling refetchEvents
+                       calendar.refetchEvents();
+                    }
                     this.reset();
                 }
             })
@@ -326,5 +482,90 @@
 
         // Cargar imágenes del día actual al inicio
         loadGalleryImages(new Date());
+
+        function showExhibitedArtworks(date) {
+            const modal = document.getElementById('exhibitedArtworksModal');
+            const content = document.getElementById('exhibitedArtworksContent');
+            const title = document.getElementById('exhibitedArtworksTitle');
+            
+            // Formatear la fecha para el título
+            const formattedDate = new Date(date).toLocaleDateString('es-ES', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            title.textContent = `Obras en el Espacio 3D - ${formattedDate}`;
+
+            // Obtener las obras exhibidas para esta fecha
+            fetch(`/api/gallery-images/${date.toISOString().split('T')[0]}`)
+                .then(response => response.json())
+                .then(artworks => {
+                    content.innerHTML = artworks.length > 0 
+                        ? artworks.map(artwork => `
+                            <div class="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg">
+                                <img src="${artwork.url}" alt="${artwork.title}" class="w-24 h-24 object-cover rounded">
+                                <div>
+                                    <h4 class="font-medium text-gray-900">${artwork.title}</h4>
+                                    <p class="text-sm text-gray-500">Artista: ${artwork.artist}</p>
+                                    <p class="text-sm text-gray-600">Técnica: ${artwork.technique}</p>
+                                    <p class="text-sm text-gray-600 mt-1">${artwork.description}</p>
+                                    ${artwork.is_owner ? `
+                                        <button type="button" 
+                                                onclick="cancelExhibitionDate(${artwork.display_date_id})" 
+                                                class="mt-2 inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                            Cancelar Exhibición
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `).join('')
+                        : '<p class="text-gray-500">No hay obras programadas para esta fecha en el espacio 3D.</p>';
+                    
+                    modal.classList.remove('hidden');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    content.innerHTML = '<p class="text-red-500">Error al cargar las obras exhibidas.</p>';
+                    modal.classList.remove('hidden');
+                });
+        }
+
+        function closeExhibitedArtworksModal() {
+            document.getElementById('exhibitedArtworksModal').classList.add('hidden');
+        }
+
+        // Función para cancelar una fecha de exhibición
+        function cancelExhibitionDate(displayDateId) {
+            if (confirm('¿Estás seguro de que deseas cancelar esta exhibición?')) {
+                fetch(`/api/artwork-display-dates/${displayDateId}/cancel`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.error || 'Error al cancelar la exhibición');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    alert(data.message);
+                    // Cerrar el modal y refrescar el calendario
+                    closeExhibitedArtworksModal();
+                    if (calendar) {
+                        calendar.refetchEvents();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error cancelling exhibition date:', error);
+                    alert(error.message);
+                });
+            }
+        }
     </script>
 @endpush 

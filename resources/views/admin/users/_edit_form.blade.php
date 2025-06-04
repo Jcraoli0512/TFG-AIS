@@ -86,27 +86,27 @@
 
     {{-- Sección de Obras del Usuario --}}
     @if($user->artworks->count() > 0)
-        <div class="mt-8">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Obras del Usuario</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                @foreach($user->artworks as $artwork)
-                    <div class="relative group">
-                        <img src="{{ $artwork->image_path ? asset('storage/' . $artwork->image_path) : asset('img/placeholder.jpg') }}" 
-                             alt="{{ $artwork->title }}" 
-                             class="w-full h-48 object-cover rounded-lg">
-                        <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex flex-col items-center justify-center p-4">
-                            <h4 class="text-white font-medium mb-2">{{ $artwork->title }}</h4>
-                            <p class="text-white text-sm mb-2">{{ $artwork->technique }} - {{ $artwork->year }}</p>
-                            <button type="button" 
-                                    onclick="handleDeleteArtwork({{ $user->id }}, {{ $artwork->id }})"
-                                    class="text-white bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md text-sm">
-                                Eliminar Obra
-                            </button>
-                        </div>
-                    </div>
-                @endforeach
+    <div class="mt-8">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Obras del Usuario</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            @foreach($user->artworks as $artwork)
+            <div class="relative group">
+                <img src="{{ $artwork->image_path ? asset('storage/' . $artwork->image_path) : asset('img/placeholder.jpg') }}" 
+                     alt="{{ $artwork->title }}" 
+                     class="w-full h-48 object-cover rounded-lg">
+                <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex flex-col items-center justify-center p-4">
+                    <h4 class="text-white font-medium mb-2">{{ $artwork->title }}</h4>
+                    <p class="text-white text-sm mb-2">{{ $artwork->technique }} - {{ $artwork->year }}</p>
+                    <button type="button" 
+                            onclick="handleDeleteArtwork({{ $user->id }}, {{ $artwork->id }})"
+                            class="text-white bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md text-sm">
+                        Eliminar Obra
+                    </button>
+                </div>
             </div>
+            @endforeach
         </div>
+    </div>
     @endif
 
     <div class="flex justify-end space-x-3 pt-4">

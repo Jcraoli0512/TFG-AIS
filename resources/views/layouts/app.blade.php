@@ -50,6 +50,7 @@
                                         <a href="{{ route('profile.show', ['user' => Auth::user()->id]) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Ir a perfil</a>
                                         @if(Auth::user()->isAdmin())
                                             <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Panel de Administración</a>
+                                            <a href="{{ route('admin.exhibition-requests.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Solicitudes de Exhibición</a>
                                         @endif
                                         <form method="POST" action="{{ route('logout') }}">
                                             @csrf

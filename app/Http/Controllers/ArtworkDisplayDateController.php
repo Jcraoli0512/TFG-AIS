@@ -20,7 +20,7 @@ class ArtworkDisplayDateController extends Controller
             $validated = $request->validate([
                 'artwork_ids' => 'required|array',
                 'artwork_ids.*' => 'exists:artworks,id',
-                'display_date' => 'required|date|after:today',
+                'display_date' => 'required|date|after_or_equal:today',
             ]);
             Log::info('ArtworkDisplayDateController@store: Validación exitosa', ['validatedData' => $validated]);
 
@@ -90,13 +90,71 @@ class ArtworkDisplayDateController extends Controller
 
     public function approve(ArtworkDisplayDate $displayDate)
     {
+        Log::info('ArtworkDisplayDateController@approve: Inicio', ['requestId' => $displayDate->id]);
+
+        $user = Auth::user();
+        if (!$user) {
+            Log::warning('ArtworkDisplayDateController@approve: Usuario no autenticado');
+            return response()->json(['error' => 'Usuario no autenticado.'], 401); // Unauthenticated
+        }
+        Log::info('ArtworkDisplayDateController@approve: Usuario autenticado', ['userId' => $user->id, 'isAdmin' => $user->isAdmin()]);
+
         // Solo los administradores pueden aprobar
-        if (!Auth::user()->is_admin) {
+        if (!$user->isAdmin()) {
+            Log::warning('ArtworkDisplayDateController@approve: Intento de aprobación sin permisos de admin', ['userId' => $user->id]);
             return response()->json(['error' => 'No tienes permiso para aprobar fechas'], 403);
         }
+        Log::info('ArtworkDisplayDateController@approve: Usuario tiene permisos de admin');
 
-        $displayDate->update(['is_approved' => true]);
+        try {
+            $displayDate->update(['is_approved' => true]);
+            Log::info('ArtworkDisplayDateController@approve: Solicitud aprobada', ['requestId' => $displayDate->id]);
 
-        return response()->json(['message' => 'Fecha de exhibición aprobada correctamente']);
+            return response()->json(['message' => 'Fecha de exhibición aprobada correctamente']);
+        } catch (\Exception $e) {
+            Log::error('ArtworkDisplayDateController@approve: Error al aprobar solicitud', [
+                'requestId' => $displayDate->id,
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json(['error' => 'Error interno del servidor al aprobar la solicitud.'], 500);
+        }
+    }
+
+    /**
+     * Cancel an approved exhibition display date by the user.
+     *
+     * @param  \App\Models\ArtworkDisplayDate  $displayDate
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function cancel(ArtworkDisplayDate $displayDate)
+    {
+        $user = Auth::user();
+
+        // Verificar que el usuario es el propietario de la fecha de exhibición
+        if ($displayDate->user_id !== $user->id) {
+            return response()->json(['error' => 'No tienes permiso para cancelar esta fecha de exhibición.'], 403);
+        }
+
+        // Verificar que la solicitud ya ha sido aprobada (opcional, pero lógico para cancelar algo que ya existe)
+        if (!$displayDate->is_approved) {
+             return response()->json(['error' => 'Esta solicitud de exhibición aún no ha sido aprobada.'], 400);
+        }
+
+        try {
+            $displayDate->delete();
+            return response()->json(['message' => 'Fecha de exhibición cancelada correctamente.']);
+        } catch (\Exception $e) {
+            Log::error('Error cancelling artwork display date:', [
+                'displayDateId' => $displayDate->id,
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json(['error' => 'Ha ocurrido un error al cancelar la fecha de exhibición.'], 500);
+        }
     }
 } 

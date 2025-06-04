@@ -128,9 +128,31 @@ class ArtworkController extends Controller
     // Nuevo método para obtener la vista parcial de selección de obras
     public function getArtworkSelectionPartial()
     {
-        $user = Auth::user();
-        $artworks = $user->artworks;
-        Log::info('ArtworkController@getArtworkSelectionPartial: Obras encontradas para el usuario', ['user_id' => $user->id, 'count' => $artworks->count()]);
-        return view('artworks._artwork_selection_partial', compact('artworks'));
+        try {
+            $user = Auth::user();
+            if (!$user) {
+                Log::error('ArtworkController@getArtworkSelectionPartial: Usuario no autenticado');
+                return response()->json(['message' => 'Usuario no autenticado.'], 401); // Unauthenticated
+            }
+            $artworks = $user->artworks;
+            Log::info('ArtworkController@getArtworkSelectionPartial: Obras encontradas para el usuario', ['user_id' => $user->id, 'count' => $artworks->count()]);
+            
+            // Verificar si el usuario tiene obras
+            if ($artworks->isEmpty()) {
+                 Log::info('ArtworkController@getArtworkSelectionPartial: Usuario sin obras disponibles', ['user_id' => $user->id]);
+                 // Retornar la vista parcial incluso si está vacía, la vista maneja el caso @empty
+            }
+            
+            return view('artworks._artwork_selection_partial', compact('artworks'));
+        } catch (\Exception $e) {
+            Log::error('ArtworkController@getArtworkSelectionPartial: Error al obtener obras', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            // Retornar un error genérico al frontend
+            return response()->json(['message' => 'Error interno del servidor al cargar las obras.'], 500);
+        }
     }
 }

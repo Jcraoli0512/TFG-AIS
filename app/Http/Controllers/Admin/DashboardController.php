@@ -8,6 +8,7 @@ use App\Models\Artwork;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Storage;
+use App\Models\ArtworkDisplayDate;
 
 class DashboardController extends Controller
 {
@@ -270,6 +271,46 @@ class DashboardController extends Controller
 
             return redirect()->back()
                 ->with('error', 'Error al eliminar la imagen panorámica: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Display a listing of exhibition requests.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function exhibitionRequests()
+    {
+        // Obtener todas las solicitudes de exhibición pendientes de aprobación
+        $requests = ArtworkDisplayDate::with(['artwork', 'user'])
+            ->where('is_approved', false)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('admin.exhibition-requests.index', compact('requests'));
+    }
+
+    /**
+     * Approve an exhibition request.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function approveRequest($id)
+    {
+        try {
+            $request = ArtworkDisplayDate::findOrFail($id);
+            $request->update(['is_approved' => true]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Solicitud aprobada correctamente'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al aprobar la solicitud: ' . $e->getMessage()
+            ], 500);
         }
     }
 } 
