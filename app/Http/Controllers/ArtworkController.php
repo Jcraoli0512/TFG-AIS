@@ -129,13 +129,13 @@ class ArtworkController extends Controller
     public function getArtworkSelectionPartial()
     {
         try {
-            $user = Auth::user();
+        $user = Auth::user();
             if (!$user) {
                 Log::error('ArtworkController@getArtworkSelectionPartial: Usuario no autenticado');
                 return response()->json(['message' => 'Usuario no autenticado.'], 401); // Unauthenticated
             }
-            $artworks = $user->artworks;
-            Log::info('ArtworkController@getArtworkSelectionPartial: Obras encontradas para el usuario', ['user_id' => $user->id, 'count' => $artworks->count()]);
+        $artworks = $user->artworks;
+        Log::info('ArtworkController@getArtworkSelectionPartial: Obras encontradas para el usuario', ['user_id' => $user->id, 'count' => $artworks->count()]);
             
             // Verificar si el usuario tiene obras
             if ($artworks->isEmpty()) {
@@ -143,7 +143,7 @@ class ArtworkController extends Controller
                  // Retornar la vista parcial incluso si está vacía, la vista maneja el caso @empty
             }
             
-            return view('artworks._artwork_selection_partial', compact('artworks'));
+        return view('artworks._artwork_selection_partial', compact('artworks'));
         } catch (\Exception $e) {
             Log::error('ArtworkController@getArtworkSelectionPartial: Error al obtener obras', [
                 'message' => $e->getMessage(),

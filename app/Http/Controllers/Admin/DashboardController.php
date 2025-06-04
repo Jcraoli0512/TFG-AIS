@@ -282,12 +282,20 @@ class DashboardController extends Controller
     public function exhibitionRequests()
     {
         // Obtener todas las solicitudes de exhibición pendientes de aprobación
-        $requests = ArtworkDisplayDate::with(['artwork', 'user'])
+        // Agrupar por usuario y fecha
+        $requestsGrouped = ArtworkDisplayDate::with(['artwork', 'user'])
             ->where('is_approved', false)
-            ->orderBy('created_at', 'desc')
-            ->get();
+            ->orderBy('display_date', 'asc')
+            ->orderBy('created_at', 'asc') // Ordenar para mantener el orden de solicitud dentro del lote
+            ->get()
+            ->groupBy(function($item) {
+                return $item->user_id . '-' . $item->display_date; // Clave de agrupación: userId-displayDate
+            });
 
-        return view('admin.exhibition-requests.index', compact('requests'));
+        // Convertir la colección agrupada en un formato más manejable si es necesario
+        // Por ahora, pasamos la colección agrupada directamente a la vista
+
+        return view('admin.exhibition-requests.index', compact('requestsGrouped'));
     }
 
     /**
@@ -310,6 +318,123 @@ class DashboardController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error al aprobar la solicitud: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Reject an exhibition request.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function rejectRequest($id)
+    {
+        try {
+            $request = ArtworkDisplayDate::findOrFail($id);
+            $request->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Solicitud rechazada correctamente'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al rechazar la solicitud: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Approve a batch of exhibition requests.
+     *
+     * @param  string  $groupKey  Formatted as 'userId-displayDate'
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function approveBatch($groupKey)
+    {
+        // Validar el formato de groupKey
+        if (strpos($groupKey, '-') === false) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Formato de clave de lote inválido.'
+            ], 400); // Bad Request
+        }
+
+        list($userId, $displayDate) = explode('-', $groupKey);
+
+        // Opcional: Validar que userId y displayDate tengan formatos esperados (ej: numérico para userId, fecha para displayDate)
+        if (!is_numeric($userId) || !\DateTime::createFromFormat('Y-m-d', $displayDate)) {
+             return response()->json([
+                'success' => false,
+                'message' => 'Datos de clave de lote inválidos.'
+            ], 400); // Bad Request
+        }
+
+        try {
+            // Encontrar todas las solicitudes pendientes para este usuario y fecha
+            $requestsToApprove = ArtworkDisplayDate::where('user_id', $userId)
+                ->where('display_date', $displayDate)
+                ->where('is_approved', false)
+                ->get();
+
+            if ($requestsToApprove->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontraron solicitudes pendientes para este lote.'
+                ], 404);
+            }
+
+            // Actualizar todas las solicitudes a aprobadas
+            foreach ($requestsToApprove as $request) {
+                $request->update(['is_approved' => true]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Lote de solicitudes aprobado correctamente'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al aprobar el lote de solicitudes: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Reject a batch of exhibition requests.
+     *
+     * @param  string  $groupKey  Formatted as 'userId-displayDate'
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function rejectBatch($groupKey)
+    {
+        list($userId, $displayDate) = explode('-', $groupKey);
+
+        try {
+            // Encontrar y eliminar todas las solicitudes pendientes para este usuario y fecha
+            $deletedCount = ArtworkDisplayDate::where('user_id', $userId)
+                ->where('display_date', $displayDate)
+                ->where('is_approved', false)
+                ->delete();
+
+            if ($deletedCount === 0) {
+                 return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontraron solicitudes pendientes para este lote para rechazar.'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Lote de solicitudes rechazado correctamente'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al rechazar el lote de solicitudes: ' . $e->getMessage()
             ], 500);
         }
     }

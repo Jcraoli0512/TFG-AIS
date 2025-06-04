@@ -44,22 +44,22 @@ class CalendarController extends Controller
     {
         $date = Carbon::parse($date);
         
-        // Obtener solo las obras seleccionadas para esta fecha (espacio 3D)
-        $selectedArtworks = Artwork::whereHas('displayDates', function ($query) use ($date) {
-            $query->where('display_date', $date)
-                  ->where('is_approved', true);
-        })->with('user')->get();
+        // Obtener las fechas de exhibición aprobadas para esta fecha
+        $displayDates = ArtworkDisplayDate::with(['artwork.user'])
+            ->where('display_date', $date)
+            ->where('is_approved', true)
+            ->get();
 
-        $images = $selectedArtworks->map(function ($artwork) {
+        $images = $displayDates->map(function ($displayDate) {
             return [
-                'id' => $artwork->id,
-                'title' => $artwork->title,
-                'url' => $artwork->image_path ? asset('storage/' . $artwork->image_path) : asset('img/placeholder.jpg'),
-                'artist' => $artwork->user->name,
-                'description' => $artwork->description,
-                'technique' => $artwork->technique,
-                'is_owner' => Auth::check() && Auth::id() === $artwork->user_id,
-                'display_date_id' => $artwork->displayDates->where('display_date', $artwork->pivot->display_date ?? Carbon::now()->toDateString())->first()->id ?? null
+                'id' => $displayDate->artwork->id,
+                'title' => $displayDate->artwork->title,
+                'url' => $displayDate->artwork->image_path ? asset('storage/' . $displayDate->artwork->image_path) : asset('img/placeholder.jpg'),
+                'artist' => $displayDate->artwork->user->name,
+                'description' => $displayDate->artwork->description,
+                'technique' => $displayDate->artwork->technique,
+                'is_owner' => Auth::check() && Auth::id() === $displayDate->artwork->user_id,
+                'display_date_id' => $displayDate->id
             ];
         });
 

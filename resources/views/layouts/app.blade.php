@@ -25,7 +25,7 @@
                     <div class="flex justify-between items-center h-16">
                         <!-- Logo -->
                         <a href="{{ route('dashboard') }}" class="flex items-center">
-                            <img src="{{ asset('img_web/logo.png') }}" alt="Logo" class="w-10 h-10">
+                            <img src="{{ asset('img_web/logo.png') }}" alt="Logo" class="w-14 h-14">
                         </a>
 
                         <!-- Menú de navegación -->
@@ -43,7 +43,7 @@
                             @auth
                                 <div class="relative">
                                     <button id="userMenuButton" type="button" class="flex items-center space-x-2 focus:outline-none">
-                                        <img src="{{ Auth::user()->profile_photo_url }}" alt="Foto de perfil" class="w-8 h-8 rounded-full object-cover">
+                                        <img src="{{ Auth::user()->profile_photo_url }}" alt="Foto de perfil" class="w-12 h-12 rounded-full object-cover">
                                         <span class="text-gray-700">{{ Auth::user()->name }}</span>
                                     </button>
                                     <div id="userDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">

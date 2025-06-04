@@ -136,12 +136,12 @@
                 { position: [0, mainRoomHeight/2, mainRoomDepth/2 - 0.5], rotation: [0, Math.PI, 0], size: [3, 4] },  // Pared sur
                 { position: [-mainRoomWidth/2 + 0.5, mainRoomHeight/2, 0], rotation: [0, Math.PI/2, 0], size: [3, 4] }, // Pared oeste
                 { position: [mainRoomWidth/2 - 0.5, mainRoomHeight/2, 0], rotation: [0, -Math.PI/2, 0], size: [3, 4] },  // Pared este
-
+                
                 // Pasillo izquierdo
                 { position: [-mainRoomWidth/2 - hallwayWidth/2, hallwayHeight/2, -hallwayDepth/2 + 0.5], rotation: [0, 0, 0], size: [2, 3] },
                 { position: [-mainRoomWidth/2 - hallwayWidth/2, hallwayHeight/2, hallwayDepth/2 - 0.5], rotation: [0, Math.PI, 0], size: [2, 3] },
                 { position: [-mainRoomWidth/2 - hallwayWidth + 0.5, hallwayHeight/2, 0], rotation: [0, Math.PI/2, 0], size: [2, 3] },
-
+                
                 // Pasillo derecho
                 { position: [mainRoomWidth/2 + hallwayWidth/2, hallwayHeight/2, -hallwayDepth/2 + 0.5], rotation: [0, 0, 0], size: [2, 3] },
                 { position: [mainRoomWidth/2 + hallwayWidth/2, hallwayHeight/2, hallwayDepth/2 - 0.5], rotation: [0, Math.PI, 0], size: [2, 3] },
@@ -152,15 +152,15 @@
             function addArtworkToScene(artwork, positionData) {
                 const textureLoader = new THREE.TextureLoader();
                 textureLoader.load(artwork.url, function(texture) {
-                    texture.minFilter = THREE.LinearFilter;
-                    texture.magFilter = THREE.LinearFilter;
-                    const material = new THREE.MeshPhongMaterial({
-                        map: texture,
-                        side: THREE.DoubleSide,
+                texture.minFilter = THREE.LinearFilter;
+                texture.magFilter = THREE.LinearFilter;
+                const material = new THREE.MeshPhongMaterial({ 
+                    map: texture,
+                    side: THREE.DoubleSide,
                         transparent: true // Asegúrate de que el material permita transparencia si la imagen la tiene
-                    });
+                });
                     const geometry = new THREE.PlaneGeometry(...positionData.size);
-                    const mesh = new THREE.Mesh(geometry, material);
+                const mesh = new THREE.Mesh(geometry, material);
                     mesh.position.set(...positionData.position);
                     mesh.rotation.set(...positionData.rotation);
                     scene.add(mesh);
@@ -187,7 +187,7 @@
                 })
                 .catch(error => {
                     console.error('Error fetching artworks for exhibition:', error);
-                });
+            });
 
             // Posicionar cámara
             camera.position.set(0, 1.7, 0);

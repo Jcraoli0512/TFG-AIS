@@ -104,6 +104,7 @@ Route::middleware(['auth', \App\Http\Middleware\AdminMiddleware::class])->prefix
     // Exhibition requests routes
     Route::get('/exhibition-requests', [DashboardController::class, 'exhibitionRequests'])->name('exhibition-requests.index');
     Route::post('/exhibition-requests/{id}/approve', [DashboardController::class, 'approveRequest'])->name('exhibition-requests.approve');
+    Route::delete('/exhibition-requests/{id}/reject', [DashboardController::class, 'rejectRequest'])->name('exhibition-requests.reject');
 });
 
 /*

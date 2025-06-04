@@ -37,14 +37,29 @@ class ArtworkDisplayDateController extends Controller
             }
             Log::info('ArtworkDisplayDateController@store: Verificación de propiedad exitosa');
 
-            // Verificar que no se exceda el límite de 3 obras por fecha
+            // Verificar si ya hay solicitudes aprobadas para esta fecha
+            $existingApprovedDates = ArtworkDisplayDate::where('display_date', $displayDate)
+                ->where('is_approved', true)
+                ->get();
+
+            if ($existingApprovedDates->count() > 0) {
+                Log::warning('ArtworkDisplayDateController@store: Ya existen solicitudes aprobadas para esta fecha', [
+                    'displayDate' => $displayDate,
+                    'existingCount' => $existingApprovedDates->count()
+                ]);
+                return response()->json([
+                    'error' => 'Ya existen obras aprobadas para exhibir en esta fecha. Por favor, selecciona otra fecha.'
+                ], 422);
+            }
+
+            // Verificar que no se exceda el límite de obras por fecha
             $existingCount = ArtworkDisplayDate::where('display_date', $displayDate)
                 ->where('is_approved', true)
                 ->count();
 
-            if ($existingCount + count($artworkIds) > 3) {
+            if ($existingCount + count($artworkIds) > 10) {
                 Log::warning('ArtworkDisplayDateController@store: Límite de obras excedido para la fecha', ['displayDate' => $displayDate, 'existingCount' => $existingCount, 'newCount' => count($artworkIds)]);
-                return response()->json(['error' => 'No se pueden programar más de 3 obras (incluyendo las ya existentes) para esta fecha'], 422);
+                return response()->json(['error' => 'No se pueden programar más de 10 obras (incluyendo las ya existentes) para esta fecha'], 422);
             }
             Log::info('ArtworkDisplayDateController@store: Verificación de límite de obras exitosa');
 
