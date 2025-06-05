@@ -1,6 +1,6 @@
 <form method="POST" action="{{ route('profile.update') }}" class="space-y-6" enctype="multipart/form-data">
     @csrf
-    @method('PUT')
+    @method('PATCH')
 
     <div>
         <label for="name" class="block text-sm font-medium text-gray-700">Nombre</label>

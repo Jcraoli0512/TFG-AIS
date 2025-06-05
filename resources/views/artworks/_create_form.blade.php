@@ -12,7 +12,7 @@
 
     <div>
         <label for="description" class="block text-sm font-medium text-gray-700">Descripción</label>
-        <textarea name="description" id="description" rows="3" required
+        <textarea name="description" id="description" rows="3"
                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"></textarea>
         @error('description')
             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -21,7 +21,7 @@
 
     <div>
         <label for="technique" class="block text-sm font-medium text-gray-700">Técnica</label>
-        <input type="text" name="technique" id="technique" required
+        <input type="text" name="technique" id="technique"
                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
         @error('technique')
             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -30,7 +30,7 @@
 
     <div>
         <label for="year" class="block text-sm font-medium text-gray-700">Año</label>
-        <input type="number" name="year" id="year" required min="1900" max="{{ date('Y') }}"
+        <input type="number" name="year" id="year" min="1900" max="{{ date('Y') }}"
                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
         @error('year')
             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -39,7 +39,7 @@
 
     <div>
         <label for="image" class="block text-sm font-medium text-gray-700">Imagen de la Obra</label>
-        <input type="file" name="image" id="image" required
+        <input type="file" name="image" id="image"
                class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
         @error('image')
             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>

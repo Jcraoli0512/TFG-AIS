@@ -40,23 +40,26 @@ class ArtworkController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'technique' => 'required|string|max:255',
-            'year' => 'required|integer|min:1900|max:' . date('Y'),
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // max 2MB
+            'description' => 'nullable|string',
+            'technique' => 'nullable|string|max:255',
+            'year' => 'nullable|integer|min:1900|max:' . date('Y'),
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // max 2MB
             'collection_id' => 'nullable|exists:collections,id'
         ]);
 
-        // Guardar la imagen
-        $imagePath = $request->file('image')->store('artworks', 'public');
+        // Guardar la imagen si se proporcionó una
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('artworks', 'public');
+        }
 
         // Crear la obra
         $artwork = Artwork::create([
             'user_id' => Auth::id(),
             'title' => $validated['title'],
-            'description' => $validated['description'],
-            'technique' => $validated['technique'],
-            'year' => $validated['year'],
+            'description' => $validated['description'] ?? null,
+            'technique' => $validated['technique'] ?? null,
+            'year' => $validated['year'] ?? null,
             'image_path' => $imagePath,
             'collection_id' => $validated['collection_id'] ?? null
         ]);

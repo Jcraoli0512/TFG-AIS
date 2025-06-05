@@ -61,6 +61,16 @@
         </div>
     </div>
 
+    {{-- Campo de descripción --}}
+    <div class="mb-4">
+        <label for="biography" class="block text-sm font-medium text-gray-700">Descripción / Biografía</label>
+        <textarea name="biography" id="biography" rows="4" 
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">{{ old('biography', $user->biography) }}</textarea>
+        @error('biography')
+            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+        @enderror
+    </div>
+
     {{-- Sección de Imagen Panorámica --}}
     <div class="mt-8">
         <h3 class="text-lg font-medium text-gray-900 mb-4">Imagen Panorámica</h3>
