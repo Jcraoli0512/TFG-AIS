@@ -20,6 +20,11 @@ Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
 
+// Página Nosotros (accesible sin autenticación)
+Route::get('/nosotros', function () {
+    return view('about');
+})->name('about');
+
 /*
 |--------------------------------------------------------------------------
 | Rutas autenticadas
@@ -30,11 +35,6 @@ Route::get('/', function () {
 Route::get('/home', function () {
     return view('home');
 })->middleware('auth')->name('home');
-
-// Página Nosotros
-Route::get('/nosotros', function () {
-    return view('about');
-})->middleware('auth')->name('about');
 
 // Redirección desde /dashboard a /home (por compatibilidad con Breeze/Jetstream)
 Route::get('/dashboard', function () {
