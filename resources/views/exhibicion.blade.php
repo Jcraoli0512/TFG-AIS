@@ -115,6 +115,33 @@
                 });
             }
 
+            // Añadir luces ambientales para iluminar toda la sala
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+            scene.add(ambientLight);
+
+            // Añadir luces direccionales desde diferentes ángulos
+            const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.3);
+            directionalLight1.position.set(0, 10, 0);
+            scene.add(directionalLight1);
+
+            const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.2);
+            directionalLight2.position.set(10, 5, 0);
+            scene.add(directionalLight2);
+
+            const directionalLight3 = new THREE.DirectionalLight(0xffffff, 0.2);
+            directionalLight3.position.set(-10, 5, 0);
+            scene.add(directionalLight3);
+
+            // Añadir luces puntuales en el techo
+            const ceilingLights = [];
+            const lightSpacing = corridorLength / 6;
+            for (let i = 0; i < 5; i++) {
+                const light = new THREE.PointLight(0xffffff, 0.25, 15);
+                light.position.set(0, wallHeight - 0.5, -corridorLength/2 + lightSpacing * (i+1));
+                scene.add(light);
+                ceilingLights.push(light);
+            }
+
             // Función para añadir una obra a la escena 3D
             function addArtworkToScene(artwork, positionData) {
                 const textureLoader = new THREE.TextureLoader();
@@ -128,7 +155,7 @@
                         // Configuración básica de la textura
                         texture.minFilter = THREE.LinearFilter;
                         texture.magFilter = THREE.LinearFilter;
-                        texture.anisotropy = 4; // Añadir anisotropía moderada
+                        texture.anisotropy = 4;
                         texture.generateMipmaps = true;
                         
                         // Material para la obra
@@ -171,7 +198,7 @@
                         scene.add(mesh);
                         
                         // Añadir un punto de luz suave para cada obra
-                        const spotLight = new THREE.PointLight(0xffffff, 0.3, 10);
+                        const spotLight = new THREE.PointLight(0xffffff, 0.3, 8);
                         spotLight.position.set(
                             positionData.position[0],
                             positionData.position[1] + 2,
@@ -210,14 +237,6 @@
             camera.position.set(0, 1.7, corridorLength/2 - 2);
             camera.lookAt(0, 1.7, 0);
 
-            // Iluminación base
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
-            scene.add(ambientLight);
-            
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.3);
-            directionalLight.position.set(5, 5, 5);
-            scene.add(directionalLight);
-            
             // Mantener controles y animación existentes...
             // (Pega aquí el resto del código de controles y animación WASD, pointer lock, etc.)
 
