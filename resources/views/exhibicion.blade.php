@@ -99,7 +99,7 @@
 
             // Posiciones para las obras (5 a la izquierda, 5 a la derecha)
             const artworkPositions = [];
-            const spacing = corridorLength / 11; // 10 espacios, 5 obras por lado
+            const spacing = corridorLength / 6; // Reducir de 11 a 6 para dar más espacio entre obras
             for (let i = 0; i < 5; i++) {
                 // Izquierda
                 artworkPositions.push({
