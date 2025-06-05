@@ -50,7 +50,7 @@ class ArtworkController extends Controller
         // Guardar la imagen si se proporcionó una
         $imagePath = null;
         if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('artworks', 'public');
+        $imagePath = $request->file('image')->store('artworks', 'public');
         }
 
         // Crear la obra
