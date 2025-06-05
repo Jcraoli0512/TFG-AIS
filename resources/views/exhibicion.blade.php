@@ -43,185 +43,187 @@
             renderer.setSize(container.clientWidth, container.clientHeight);
             container.appendChild(renderer.domElement);
 
-            // Variables para el movimiento
-            const moveSpeed = 0.15;
-            const keys = {
-                w: false,
-                a: false,
-                s: false,
-                d: false
-            };
+            // Parámetros del pasillo
+            const corridorLength = 30; // Largo del pasillo
+            const corridorWidth = 6;   // Ancho del pasillo
+            const wallHeight = 5;
+            const wallThickness = 0.5;
 
             // Materiales
             const wallMaterial = new THREE.MeshPhongMaterial({ 
-                color: 0xF5F5DC,  // Beige
-                shininess: 0
+                color: 0xF5F5DC, 
+                shininess: 0,
+                side: THREE.DoubleSide 
             });
             const floorMaterial = new THREE.MeshPhongMaterial({ 
-                color: 0x8B4513,  // Marrón
-                shininess: 0
+                color: 0x8B4513, 
+                shininess: 0,
+                side: THREE.DoubleSide 
             });
             const ceilingMaterial = new THREE.MeshPhongMaterial({ 
-                color: 0x000000,  // Negro
-                shininess: 0
+                color: 0x222222, 
+                shininess: 0,
+                side: THREE.DoubleSide 
             });
 
-            // Crear geometrías
-            const wallGeometry = new THREE.BoxGeometry(1, 5, 1);
-            const floorGeometry = new THREE.PlaneGeometry(1, 1);
-            const ceilingGeometry = new THREE.PlaneGeometry(1, 1);
-
-            // Función para crear pared
-            function createWall(x, z, width, depth) {
-                const wall = new THREE.Mesh(wallGeometry, wallMaterial);
-                wall.position.set(x, 2.5, z);
-                wall.scale.set(width, 1, depth);
+            // Crear paredes laterales
+            function createWall(x, z, width, height, depth) {
+                const geometry = new THREE.BoxGeometry(width, height, depth);
+                const wall = new THREE.Mesh(geometry, wallMaterial);
+                wall.position.set(x, height/2, z);
                 scene.add(wall);
             }
 
-            // Función para crear suelo
-            function createFloor(x, z, width, depth) {
-                const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-                floor.rotation.x = -Math.PI / 2;
-                floor.position.set(x, 0, z);
-                floor.scale.set(width, 1, depth);
-                scene.add(floor);
+            // Pared izquierda
+            createWall(-corridorWidth/2, 0, wallThickness, wallHeight, corridorLength);
+            // Pared derecha
+            createWall(corridorWidth/2, 0, wallThickness, wallHeight, corridorLength);
+            // Pared fondo (opcional)
+            createWall(0, -corridorLength/2, corridorWidth, wallHeight, wallThickness);
+            // Pared entrada (opcional)
+            createWall(0, corridorLength/2, corridorWidth, wallHeight, wallThickness);
+
+            // Suelo
+            const floorGeometry = new THREE.PlaneGeometry(corridorWidth, corridorLength);
+            const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+            floor.rotation.x = -Math.PI / 2;
+            floor.position.set(0, 0, 0);
+            scene.add(floor);
+
+            // Techo
+            const ceilingGeometry = new THREE.PlaneGeometry(corridorWidth, corridorLength);
+            const ceiling = new THREE.Mesh(ceilingGeometry, ceilingMaterial);
+            ceiling.rotation.x = Math.PI / 2;
+            ceiling.position.set(0, wallHeight, 0);
+            scene.add(ceiling);
+
+            // Posiciones para las obras (5 a la izquierda, 5 a la derecha)
+            const artworkPositions = [];
+            const spacing = corridorLength / 11; // 10 espacios, 5 obras por lado
+            for (let i = 0; i < 5; i++) {
+                // Izquierda
+                artworkPositions.push({
+                    position: [-(corridorWidth/2) + wallThickness/2 + 0.1, wallHeight/2, -corridorLength/2 + spacing * (i+1)],
+                    rotation: [0, Math.PI/2, 0],
+                    size: [3, 4]
+                });
+                // Derecha
+                artworkPositions.push({
+                    position: [(corridorWidth/2) - wallThickness/2 - 0.1, wallHeight/2, -corridorLength/2 + spacing * (i+1)],
+                    rotation: [0, -Math.PI/2, 0],
+                    size: [3, 4]
+                });
             }
-
-            // Función para crear techo
-            function createCeiling(x, z, width, depth) {
-                const ceiling = new THREE.Mesh(ceilingGeometry, ceilingMaterial);
-                ceiling.rotation.x = Math.PI / 2;
-                ceiling.position.set(x, 5, z);
-                ceiling.scale.set(width, 1, depth);
-                scene.add(ceiling);
-            }
-
-            // Sala principal
-            const mainRoomWidth = 20;
-            const mainRoomHeight = 8;
-            const mainRoomDepth = 20;
-            const wallThickness = 0.5;
-
-            // Paredes
-            createWall(0, -mainRoomDepth/2, mainRoomWidth, 1); // Pared norte
-            createWall(0, mainRoomDepth/2, mainRoomWidth, 1);  // Pared sur
-            createWall(-mainRoomWidth/2, 0, 1, mainRoomDepth); // Pared oeste
-            createWall(mainRoomWidth/2, 0, 1, mainRoomDepth);  // Pared este
-
-            // Suelo y techo
-            createFloor(0, 0, mainRoomWidth, mainRoomDepth);
-            createCeiling(0, 0, mainRoomWidth, mainRoomDepth);
-
-            // Pasillo izquierdo
-            const hallwayWidth = 4;
-            const hallwayHeight = mainRoomHeight;
-            const hallwayDepth = 10;
-
-            createWall(-mainRoomWidth/2 - hallwayWidth/2, 0, 1, hallwayDepth);
-            createWall(-mainRoomWidth/2 - hallwayWidth, 0, 1, hallwayDepth);
-            createFloor(-mainRoomWidth/2 - hallwayWidth/2, 0, hallwayWidth, hallwayDepth);
-            createCeiling(-mainRoomWidth/2 - hallwayWidth/2, 0, hallwayWidth, hallwayDepth);
-
-            // Pasillo derecho
-            createWall(mainRoomWidth/2 + hallwayWidth/2, 0, 1, hallwayDepth);
-            createWall(mainRoomWidth/2 + hallwayWidth, 0, 1, hallwayDepth);
-            createFloor(mainRoomWidth/2 + hallwayWidth/2, 0, hallwayWidth, hallwayDepth);
-            createCeiling(mainRoomWidth/2 + hallwayWidth/2, 0, hallwayWidth, hallwayDepth);
-
-            // Definir las posiciones y rotaciones para las obras
-            const artworkPositions = [
-                // Sala principal
-                { position: [0, mainRoomHeight/2, -mainRoomDepth/2 + 0.5], rotation: [0, 0, 0], size: [3, 4] }, // Pared norte
-                { position: [0, mainRoomHeight/2, mainRoomDepth/2 - 0.5], rotation: [0, Math.PI, 0], size: [3, 4] },  // Pared sur
-                { position: [-mainRoomWidth/2 + 0.5, mainRoomHeight/2, 0], rotation: [0, Math.PI/2, 0], size: [3, 4] }, // Pared oeste
-                { position: [mainRoomWidth/2 - 0.5, mainRoomHeight/2, 0], rotation: [0, -Math.PI/2, 0], size: [3, 4] },  // Pared este
-                
-                // Pasillo izquierdo
-                { position: [-mainRoomWidth/2 - hallwayWidth/2, hallwayHeight/2, -hallwayDepth/2 + 0.5], rotation: [0, 0, 0], size: [2, 3] },
-                { position: [-mainRoomWidth/2 - hallwayWidth/2, hallwayHeight/2, hallwayDepth/2 - 0.5], rotation: [0, Math.PI, 0], size: [2, 3] },
-                { position: [-mainRoomWidth/2 - hallwayWidth + 0.5, hallwayHeight/2, 0], rotation: [0, Math.PI/2, 0], size: [2, 3] },
-                
-                // Pasillo derecho
-                { position: [mainRoomWidth/2 + hallwayWidth/2, hallwayHeight/2, -hallwayDepth/2 + 0.5], rotation: [0, 0, 0], size: [2, 3] },
-                { position: [mainRoomWidth/2 + hallwayWidth/2, hallwayHeight/2, hallwayDepth/2 - 0.5], rotation: [0, Math.PI, 0], size: [2, 3] },
-                { position: [mainRoomWidth/2 + hallwayWidth - 0.5, hallwayHeight/2, 0], rotation: [0, -Math.PI/2, 0], size: [2, 3] }
-            ];
 
             // Función para añadir una obra a la escena 3D
             function addArtworkToScene(artwork, positionData) {
                 const textureLoader = new THREE.TextureLoader();
-                textureLoader.load(artwork.url, function(texture) {
-                texture.minFilter = THREE.LinearFilter;
-                texture.magFilter = THREE.LinearFilter;
-                const material = new THREE.MeshPhongMaterial({ 
-                    map: texture,
-                    side: THREE.DoubleSide,
-                        transparent: true // Asegúrate de que el material permita transparencia si la imagen la tiene
-                });
-                    const geometry = new THREE.PlaneGeometry(...positionData.size);
-                const mesh = new THREE.Mesh(geometry, material);
-                    mesh.position.set(...positionData.position);
-                    mesh.rotation.set(...positionData.rotation);
-                    scene.add(mesh);
-                }, undefined, function(err) {
-                    console.error('Error loading texture for artwork:', artwork.title, err);
-                    // Opcional: añadir un placeholder o un indicador de error en la escena
-                });
+                console.log('Loading artwork:', artwork.url);
+                
+                textureLoader.load(
+                    artwork.url,
+                    function(texture) {
+                        console.log('Texture loaded successfully');
+                        
+                        // Configuración básica de la textura
+                        texture.minFilter = THREE.LinearFilter;
+                        texture.magFilter = THREE.LinearFilter;
+                        texture.anisotropy = 4; // Añadir anisotropía moderada
+                        texture.generateMipmaps = true;
+                        
+                        // Material para la obra
+                        const material = new THREE.MeshBasicMaterial({ 
+                            map: texture,
+                            side: THREE.DoubleSide
+                        });
+                        
+                        // Crear la geometría y el mesh de la obra
+                        const geometry = new THREE.PlaneGeometry(...positionData.size);
+                        const mesh = new THREE.Mesh(geometry, material);
+                        
+                        // Posicionar la obra ligeramente por delante del marco
+                        const artworkPosition = [...positionData.position];
+                        // Mover la obra hacia adelante y hacia el centro del pasillo
+                        if (positionData.position[0] < 0) { // Si está en la pared izquierda
+                            artworkPosition[0] += 0.2; // Mover hacia la derecha
+                        } else { // Si está en la pared derecha
+                            artworkPosition[0] -= 0.2; // Mover hacia la izquierda
+                        }
+                        artworkPosition[2] += 0.2; // Mover hacia adelante
+                        mesh.position.set(...artworkPosition);
+                        mesh.rotation.set(...positionData.rotation);
+                        
+                        // Añadir un marco simple
+                        const frameGeometry = new THREE.BoxGeometry(
+                            positionData.size[0] + 0.2, 
+                            positionData.size[1] + 0.2, 
+                            0.1
+                        );
+                        const frameMaterial = new THREE.MeshBasicMaterial({ 
+                            color: 0x8B4513
+                        });
+                        const frame = new THREE.Mesh(frameGeometry, frameMaterial);
+                        frame.position.set(...positionData.position);
+                        frame.rotation.set(...positionData.rotation);
+                        
+                        // Añadir primero el marco y luego la obra
+                        scene.add(frame);
+                        scene.add(mesh);
+                        
+                        // Añadir un punto de luz suave para cada obra
+                        const spotLight = new THREE.PointLight(0xffffff, 0.3, 10);
+                        spotLight.position.set(
+                            positionData.position[0],
+                            positionData.position[1] + 2,
+                            positionData.position[2]
+                        );
+                        scene.add(spotLight);
+                    },
+                    function(xhr) {
+                        console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+                    },
+                    function(error) {
+                        console.error('Error loading texture:', error);
+                    }
+                );
             }
 
             // Obtener y mostrar las obras del día actual
             const today = new Date().toISOString().split('T')[0];
+            console.log('Fetching artworks for date:', today); // Debug log
+            
             fetch(`/api/gallery-images/${today}`)
                 .then(response => response.json())
                 .then(artworks => {
-                    console.log('Artworks for today:', artworks);
-
-                    artworks.forEach((artwork, index) => {
-                        if (index < artworkPositions.length) { // Usar las posiciones predefinidas
+                    console.log('Received artworks:', artworks); // Debug log
+                    artworks.slice(0, 10).forEach((artwork, index) => {
+                        if (index < artworkPositions.length) {
                             addArtworkToScene(artwork, artworkPositions[index]);
-                        } else {
-                            console.warn('Not enough predefined positions for all artworks.', artwork.title);
                         }
                     });
                 })
                 .catch(error => {
-                    console.error('Error fetching artworks for exhibition:', error);
-            });
+                    console.error('Error fetching artworks:', error);
+                });
 
-            // Posicionar cámara
-            camera.position.set(0, 1.7, 0);
-            camera.lookAt(0, 1.7, -1);
+            // Posicionar cámara al inicio del pasillo
+            camera.position.set(0, 1.7, corridorLength/2 - 2);
+            camera.lookAt(0, 1.7, 0);
 
-            // Iluminación
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            // Iluminación base
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
             scene.add(ambientLight);
-
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.3);
             directionalLight.position.set(5, 5, 5);
             scene.add(directionalLight);
+            
+            // Mantener controles y animación existentes...
+            // (Pega aquí el resto del código de controles y animación WASD, pointer lock, etc.)
 
-            // Controles de teclado
-            document.addEventListener('keydown', (e) => {
-                if (keys.hasOwnProperty(e.key.toLowerCase())) {
-                    keys[e.key.toLowerCase()] = true;
-                }
-            });
-
-            document.addEventListener('keyup', (e) => {
-                if (keys.hasOwnProperty(e.key.toLowerCase())) {
-                    keys[e.key.toLowerCase()] = false;
-                }
-            });
-
-            // Manejar redimensionamiento
-            window.addEventListener('resize', () => {
-                camera.aspect = container.clientWidth / container.clientHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(container.clientWidth, container.clientHeight);
-            });
-
-            // Controles de ratón para mirar alrededor
+            // --- CONTROLES Y ANIMACIÓN (igual que antes) ---
+            const moveSpeed = 0.15;
+            const keys = { w: false, a: false, s: false, d: false };
             let isPointerLocked = false;
             const sensitivity = 0.002;
             let pitchObject = new THREE.Object3D();
@@ -229,18 +231,10 @@
             yawObject.position.y = 1.7;
             yawObject.add(pitchObject);
             scene.add(yawObject);
-
             camera.position.set(0, 0, 0);
             pitchObject.add(camera);
-
-            container.addEventListener('click', () => {
-                container.requestPointerLock();
-            });
-
-            document.addEventListener('pointerlockchange', () => {
-                isPointerLocked = document.pointerLockElement === container;
-            });
-
+            container.addEventListener('click', () => { container.requestPointerLock(); });
+            document.addEventListener('pointerlockchange', () => { isPointerLocked = document.pointerLockElement === container; });
             document.addEventListener('mousemove', (e) => {
                 if (isPointerLocked) {
                     yawObject.rotation.y -= e.movementX * sensitivity;
@@ -248,59 +242,41 @@
                     pitchObject.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, pitchObject.rotation.x));
                 }
             });
-
-            // Animación y movimiento
+            document.addEventListener('keydown', (e) => { if (keys.hasOwnProperty(e.key.toLowerCase())) keys[e.key.toLowerCase()] = true; });
+            document.addEventListener('keyup', (e) => { if (keys.hasOwnProperty(e.key.toLowerCase())) keys[e.key.toLowerCase()] = false; });
+            window.addEventListener('resize', () => {
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            });
             function animate() {
                 requestAnimationFrame(animate);
-
-                // Movimiento WASD
                 const moveDirection = new THREE.Vector3();
-                if (keys.w) moveDirection.z += 1;
-                if (keys.s) moveDirection.z -= 1;
-                if (keys.a) moveDirection.x += 1;
-                if (keys.d) moveDirection.x -= 1;
-
+                if (keys.w) moveDirection.z -= 1;
+                if (keys.s) moveDirection.z += 1;
+                if (keys.a) moveDirection.x -= 1;
+                if (keys.d) moveDirection.x += 1;
                 if (moveDirection.length() > 0) {
                     moveDirection.normalize();
                     moveDirection.multiplyScalar(moveSpeed);
                     
-                    // Aplicar movimiento en la dirección de la cámara
-                    const cameraDirection = new THREE.Vector3();
-                    camera.getWorldDirection(cameraDirection);
-                    cameraDirection.y = 0;
-                    cameraDirection.normalize();
-
-                    const right = new THREE.Vector3();
-                    right.crossVectors(new THREE.Vector3(0, 1, 0), cameraDirection);
-
-                    const movement = new THREE.Vector3();
-                    movement.addScaledVector(cameraDirection, moveDirection.z);
-                    movement.addScaledVector(right, moveDirection.x);
-
-                    // Verificar colisiones con las paredes
-                    const nextPosition = yawObject.position.clone().add(movement);
-                    const roomBounds = {
-                        x: mainRoomWidth/2 - 1,
-                        z: mainRoomDepth/2 - 1,
-                        hallwayX: mainRoomWidth/2 + hallwayWidth - 1,
-                        hallwayZ: hallwayDepth/2 - 1
-                    };
-
-                    if (Math.abs(nextPosition.x) < roomBounds.x || 
-                        (nextPosition.x < -roomBounds.hallwayX && Math.abs(nextPosition.z) < roomBounds.hallwayZ) ||
-                        (nextPosition.x > roomBounds.hallwayX && Math.abs(nextPosition.z) < roomBounds.hallwayZ)) {
+                    // Ajustar la dirección del movimiento según la rotación de la cámara
+                    const angle = -yawObject.rotation.y; // Invertimos el ángulo para mantener la consistencia
+                    const rotatedX = moveDirection.x * Math.cos(angle) - moveDirection.z * Math.sin(angle);
+                    const rotatedZ = moveDirection.x * Math.sin(angle) + moveDirection.z * Math.cos(angle);
+                    
+                    const nextPosition = yawObject.position.clone().add(new THREE.Vector3(rotatedX, 0, rotatedZ));
+                    
+                    // Limitar movimiento a los límites del pasillo
+                    if (Math.abs(nextPosition.x) < (corridorWidth/2 - 0.7)) {
                         yawObject.position.x = nextPosition.x;
                     }
-
-                    if (Math.abs(nextPosition.z) < roomBounds.z || 
-                        (Math.abs(nextPosition.x) > roomBounds.x && Math.abs(nextPosition.z) < roomBounds.hallwayZ)) {
+                    if (nextPosition.z > -corridorLength/2 + 1 && nextPosition.z < corridorLength/2 - 1) {
                         yawObject.position.z = nextPosition.z;
                     }
                 }
-
                 renderer.render(scene, camera);
             }
-
             animate();
         });
     </script>
