@@ -35,7 +35,7 @@
                             <a href="#" class="text-gray-700 hover:text-gray-900">Galería</a>
                             <a href="{{ auth()->check() ? route('calendar') : route('login') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('calendar') ? 'font-semibold' : '' }}">Calendario</a>
                             <a href="{{ auth()->check() ? '#' : route('login') }}" class="text-gray-700 hover:text-gray-900">Artistas</a>
-                            <a href="{{ auth()->check() ? '#' : route('login') }}" class="text-gray-700 hover:text-gray-900">Nosotros</a>
+                            <a href="{{ auth()->check() ? route('about') : route('login') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('about') ? 'font-semibold' : '' }}">Nosotros</a>
                         </div>
 
                         <!-- Menú de usuario -->
@@ -89,7 +89,7 @@
                             <li><a href="#" class="text-gray-600 hover:text-gray-900">Galería</a></li>
                             <li><a href="{{ auth()->check() ? route('calendar') : route('login') }}" class="text-gray-600 hover:text-gray-900">Calendario</a></li>
                             <li><a href="#" class="text-gray-600 hover:text-gray-900">Artistas</a></li>
-                            <li><a href="#" class="text-gray-600 hover:text-gray-900">Nosotros</a></li>
+                            <li><a href="{{ auth()->check() ? route('about') : route('login') }}" class="text-gray-600 hover:text-gray-900">Nosotros</a></li>
                         </ul>
                     </div>
                     <div>

@@ -31,6 +31,11 @@ Route::get('/home', function () {
     return view('home');
 })->middleware('auth')->name('home');
 
+// Página Nosotros
+Route::get('/nosotros', function () {
+    return view('about');
+})->middleware('auth')->name('about');
+
 // Redirección desde /dashboard a /home (por compatibilidad con Breeze/Jetstream)
 Route::get('/dashboard', function () {
     return redirect('/home');
