@@ -85,7 +85,8 @@ class ArtworkController extends Controller
             'description' => $artwork->description,
             'technique' => $artwork->technique,
             'year' => $artwork->year,
-            'image_url' => Storage::url($artwork->image_path)
+            'image_url' => Storage::url($artwork->image_path),
+            'is_owner' => Auth::check() && Auth::id() === $artwork->user_id
         ]);
     }
 
@@ -100,9 +101,26 @@ class ArtworkController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Artwork $artwork)
     {
-        //
+        // Verificar si el usuario autenticado es el propietario de la obra
+        if ($artwork->user_id !== Auth::id()) {
+            return response()->json(['success' => false, 'message' => 'No tienes permiso para editar esta obra.'], 403);
+        }
+
+        $validated = $request->validate([
+            'technique' => 'nullable|string|max:255',
+            'year' => 'nullable|integer|min:1900|max:' . date('Y'),
+            'description' => 'nullable|string',
+        ]);
+
+        $artwork->update([
+            'technique' => $validated['technique'] ?? $artwork->technique,
+            'year' => $validated['year'] ?? $artwork->year,
+            'description' => $validated['description'] ?? $artwork->description,
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Obra actualizada correctamente.']);
     }
 
     /**
@@ -157,5 +175,45 @@ class ArtworkController extends Controller
             // Retornar un error genérico al frontend
             return response()->json(['message' => 'Error interno del servidor al cargar las obras.'], 500);
         }
+    }
+
+    /**
+     * Display a gallery of random artworks.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function indexGallery(): View
+    {
+        $artworks = Artwork::with('user')
+                        ->inRandomOrder()
+                        ->get();
+
+        return view('gallery', compact('artworks'));
+    }
+
+    /**
+     * Get a random selection of artworks.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function randomArtworks()
+    {
+        $artworks = Artwork::with('user') // Cargar la relación con el usuario (artista)
+                        ->inRandomOrder()
+                        ->get()
+                        ->map(function ($artwork) {
+                            return [
+                                'id' => $artwork->id,
+                                'title' => $artwork->title,
+                                'description' => $artwork->description,
+                                'technique' => $artwork->technique,
+                                'year' => $artwork->year,
+                                'image_url' => Storage::url($artwork->image_path),
+                                'artist_name' => $artwork->user->name, // Nombre del artista
+                                'artist_id' => $artwork->user->id, // ID del artista
+                            ];
+                        });
+
+        return response()->json($artworks);
     }
 }

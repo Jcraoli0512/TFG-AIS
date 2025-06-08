@@ -32,9 +32,9 @@
                         <div class="hidden md:flex items-center space-x-6">
                             <a href="{{ route('dashboard') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('dashboard') ? 'font-semibold' : '' }}">Inicio</a>
                             <a href="{{ auth()->check() ? route('exhibicion') : route('login') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('exhibicion') ? 'font-semibold' : '' }}">Exhibición</a>
-                            <a href="#" class="text-gray-700 hover:text-gray-900">Galería</a>
+                            <a href="/gallery" class="text-gray-700 hover:text-gray-900">Galería</a>
                             <a href="{{ auth()->check() ? route('calendar') : route('login') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('calendar') ? 'font-semibold' : '' }}">Calendario</a>
-                            <a href="{{ auth()->check() ? '#' : route('login') }}" class="text-gray-700 hover:text-gray-900">Artistas</a>
+                            <a href="{{ route('artists.index') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('artists.index') ? 'font-semibold' : '' }}">Artistas</a>
                             <a href="{{ route('about') }}" class="text-gray-700 hover:text-gray-900 {{ request()->routeIs('about') ? 'font-semibold' : '' }}">Nosotros</a>
                         </div>
 
@@ -59,8 +59,8 @@
                                     </div>
                                 </div>
                             @else
-                                <a href="{{ route('login') }}" class="text-gray-700 hover:text-gray-900">Iniciar sesión</a>
-                                <a href="{{ route('register') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">Registrarse</a>
+                                <a href="{{ route('register') }}" class="bg-gray-100 px-4 py-2 rounded-lg hover:bg-gray-200 transition">Registrarte</a>
+                                <a href="{{ route('login') }}" class="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition">Iniciar Sesión</a>
                             @endauth
                         </div>
                     </div>
@@ -86,9 +86,9 @@
                         <ul class="space-y-2">
                             <li><a href="{{ route('dashboard') }}" class="text-gray-600 hover:text-gray-900">Inicio</a></li>
                             <li><a href="{{ auth()->check() ? route('exhibicion') : route('login') }}" class="text-gray-600 hover:text-gray-900">Exhibición</a></li>
-                            <li><a href="#" class="text-gray-600 hover:text-gray-900">Galería</a></li>
+                            <li><a href="/gallery" class="text-gray-600 hover:text-gray-900">Galería</a></li>
                             <li><a href="{{ auth()->check() ? route('calendar') : route('login') }}" class="text-gray-600 hover:text-gray-900">Calendario</a></li>
-                            <li><a href="#" class="text-gray-600 hover:text-gray-900">Artistas</a></li>
+                            <li><a href="{{ route('artists.index') }}" class="text-gray-600 hover:text-gray-900">Artistas</a></li>
                             <li><a href="{{ route('about') }}" class="text-gray-600 hover:text-gray-900">Nosotros</a></li>
                         </ul>
                     </div>

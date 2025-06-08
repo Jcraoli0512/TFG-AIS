@@ -56,6 +56,8 @@ class CalendarController extends Controller
                 'title' => $displayDate->artwork->title,
                 'url' => $displayDate->artwork->image_path ? asset('storage/' . $displayDate->artwork->image_path) : asset('img/placeholder.jpg'),
                 'artist' => $displayDate->artwork->user->name,
+                'artist_id' => $displayDate->artwork->user->id,
+                'artist_biography' => $displayDate->artwork->user->biography,
                 'description' => $displayDate->artwork->description,
                 'technique' => $displayDate->artwork->technique,
                 'is_owner' => Auth::check() && Auth::id() === $displayDate->artwork->user_id,

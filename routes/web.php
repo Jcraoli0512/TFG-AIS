@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\ArtworkDisplayDateController;
 use App\Http\Controllers\ArtworkController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,7 +46,7 @@ Route::get('/dashboard', function () {
 Route::middleware(['auth'])->group(function () {
     // Ruta base de perfil
     Route::get('/profile', function () {
-        return redirect()->route('profile.show', ['user' => auth()->id()]);
+        return redirect()->route('profile.show', ['user' => Auth::id()]);
     })->name('profile');
 
     // Edición de perfil
@@ -60,10 +61,11 @@ Route::middleware(['auth'])->group(function () {
     })->name('profile.show');
 });
 
-// Galería de imágenes
-Route::get('/gallery', function () {
-    return view('gallery');
-})->middleware(['auth'])->name('gallery');
+// Galería de imágenes (accesible para todos, carga directa desde el controlador)
+Route::get('/gallery', [ArtworkController::class, 'indexGallery'])->name('gallery');
+
+// Página de Artistas (accesible para todos, con búsqueda)
+Route::get('/artists', [UserController::class, 'indexArtists'])->name('artists.index');
 
 // Calendario
 Route::get('/calendar', [CalendarController::class, 'index'])->middleware(['auth'])->name('calendar');

@@ -75,18 +75,26 @@
     </div>
 
     {{-- Modal de Confirmación --}}
-    <div id="confirmationModalAdmin" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div class="mt-3 text-center">
-                <h3 class="text-lg leading-6 font-medium text-gray-900" id="confirmationModalTitle"></h3>
-                <div class="mt-2 px-7 py-3">
-                    <p class="text-sm text-gray-500" id="confirmationModalMessage"></p>
+    <div id="confirmationModalAdmin" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50 flex items-center justify-center">
+        <div class="relative mx-auto p-6 border w-96 shadow-xl rounded-lg bg-white transform transition-all">
+            <div class="text-center">
+                {{-- Icono de confirmación --}}
+                <div id="confirmationModalIcon" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4">
+                    {{-- El icono se cambiará dinámicamente según la acción --}}
                 </div>
-                <div class="items-center px-4 py-3">
-                    <button id="cancelConfirmationButton" class="px-4 py-2 mr-2 bg-gray-300 text-gray-700 text-base font-medium rounded-md w-1/2 shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200">
+                
+                <h3 class="text-lg font-semibold text-gray-900 mb-2" id="confirmationModalTitle"></h3>
+                <div class="mt-2">
+                    <p class="text-sm text-gray-600" id="confirmationModalMessage"></p>
+                </div>
+                
+                <div class="mt-6 flex justify-center space-x-3">
+                    <button id="cancelConfirmationButton" 
+                            class="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-md shadow-sm hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200">
                         Cancelar
                     </button>
-                    <button id="confirmActionButton" class="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-1/2 shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300">
+                    <button id="confirmActionButton" 
+                            class="px-4 py-2 text-white text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200">
                         Confirmar
                     </button>
                 </div>
@@ -95,17 +103,17 @@
     </div>
 
     {{-- Modal de Obras --}}
-    <div id="artworksModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-        <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
+    <div id="artworksModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50 flex items-center justify-center">
+        <div class="relative mx-auto p-6 border w-11/12 max-w-4xl shadow-xl rounded-lg bg-white transform transition-all">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-medium text-gray-900" id="artworksModalTitle"></h3>
-                <button onclick="closeArtworksModal()" class="text-gray-400 hover:text-gray-500">
+                <h3 class="text-lg font-semibold text-gray-900" id="artworksModalTitle"></h3>
+                <button onclick="closeArtworksModal()" class="text-gray-400 hover:text-gray-500 transition-colors duration-200">
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
-            <div class="mt-2 px-7 py-3">
+            <div class="mt-4">
                 <div id="artworksGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     <!-- Las imágenes se cargarán aquí dinámicamente -->
                 </div>
@@ -170,12 +178,31 @@
         currentRequestId = requestId;
         currentAction = action;
         
-        if (action === 'approve') {
-            confirmActionButton.classList.remove('bg-red-600', 'hover:bg-red-700', 'focus:ring-red-300');
-            confirmActionButton.classList.add('bg-green-600', 'hover:bg-green-700', 'focus:ring-green-300');
-        } else if (action === 'reject') {
-            confirmActionButton.classList.remove('bg-green-600', 'hover:bg-green-700', 'focus:ring-green-300');
-            confirmActionButton.classList.add('bg-red-600', 'hover:bg-red-700', 'focus:ring-red-300');
+        const confirmButton = document.getElementById('confirmActionButton');
+        const modalIcon = document.getElementById('confirmationModalIcon');
+        
+        // Resetear clases
+        confirmButton.classList.remove('bg-red-600', 'hover:bg-red-700', 'focus:ring-red-300', 'bg-green-600', 'hover:bg-green-700', 'focus:ring-green-300');
+        modalIcon.innerHTML = ''; // Limpiar el icono actual
+        
+        if (action === 'approveBatch') {
+            confirmButton.classList.add('bg-green-600', 'hover:bg-green-700', 'focus:ring-green-300');
+            confirmButton.textContent = 'Aprobar';
+            modalIcon.classList.add('bg-green-100');
+            modalIcon.innerHTML = `
+                <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+            `;
+        } else if (action === 'rejectBatch') {
+            confirmButton.classList.add('bg-red-600', 'hover:bg-red-700', 'focus:ring-red-300');
+            confirmButton.textContent = 'Rechazar';
+            modalIcon.classList.add('bg-red-100');
+            modalIcon.innerHTML = `
+                <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            `;
         }
 
         confirmationModalAdmin.classList.remove('hidden');

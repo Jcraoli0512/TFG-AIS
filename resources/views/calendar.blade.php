@@ -141,18 +141,28 @@
     </div>
 
     {{-- Modal de Confirmación de Cancelación --}}
-    <div id="cancelConfirmationModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-[10000]">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div class="mt-3 text-center">
-                <h3 class="text-lg leading-6 font-medium text-gray-900">Confirmar Cancelación</h3>
-                <div class="mt-2 px-7 py-3">
-                    <p class="text-sm text-gray-500">¿Estás seguro de que deseas cancelar esta exhibición? Esta acción no se puede deshacer.</p>
+    <div id="cancelConfirmationModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-[10000] flex items-center justify-center">
+        <div class="relative mx-auto p-6 border w-96 shadow-xl rounded-lg bg-white transform transition-all">
+            <div class="text-center">
+                {{-- Icono de advertencia --}}
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                    <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
                 </div>
-                <div class="items-center px-4 py-3">
-                    <button id="cancelCancelButton" class="px-4 py-2 mr-2 bg-gray-300 text-gray-700 text-base font-medium rounded-md w-1/2 shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200">
+                
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Confirmar Cancelación</h3>
+                <div class="mt-2">
+                    <p class="text-sm text-gray-600">¿Estás seguro de que deseas cancelar esta exhibición? Esta acción no se puede deshacer.</p>
+                </div>
+                
+                <div class="mt-6 flex justify-center space-x-3">
+                    <button id="cancelCancelButton" 
+                            class="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-md shadow-sm hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200">
                         No, Mantener
                     </button>
-                    <button id="confirmCancelButton" class="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-1/2 shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300">
+                    <button id="confirmCancelButton" 
+                            class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200">
                         Sí, Cancelar
                     </button>
                 </div>
@@ -161,22 +171,21 @@
     </div>
 
     {{-- Modal de confirmación de solicitud (usado también para mensajes generales) --}}
-    <div id="confirmationModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-[10000]">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div class="mt-3 text-center">
-                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
-                    <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
+    <div id="confirmationModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-[10000] flex items-center justify-center">
+        <div class="relative mx-auto p-6 border w-96 shadow-xl rounded-lg bg-white transform transition-all">
+            <div class="text-center">
+                <div id="confirmationModalIcon" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4">
+                    {{-- El icono se cambiará dinámicamente según el tipo de mensaje --}}
                 </div>
-                <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">¡Solicitud Enviada!</h3>
-                <div class="mt-2 px-7 py-3">
-                    <p class="text-sm text-gray-500">
-                        Tu solicitud de exhibición ha sido enviada correctamente. El administrador la revisará y te notificará cuando sea aprobada.
-                    </p>
+                
+                <h3 class="text-lg font-semibold text-gray-900 mb-2" id="confirmationModalTitle"></h3>
+                <div class="mt-2">
+                    <p class="text-sm text-gray-600" id="confirmationModalMessage"></p>
                 </div>
-                <div class="items-center px-4 py-3">
-                    <button id="closeConfirmationModal" class="px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300">
+                
+                <div class="mt-6">
+                    <button id="closeConfirmationModal" 
+                            class="w-full px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200">
                         Aceptar
                     </button>
                 </div>
@@ -185,18 +194,28 @@
     </div>
 
     {{-- Modal de Confirmación de Cancelación Masiva --}}
-    <div id="cancelAllConfirmationModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-[10000]">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div class="mt-3 text-center">
-                <h3 class="text-lg leading-6 font-medium text-gray-900">Confirmar Cancelación Masiva</h3>
-                <div class="mt-2 px-7 py-3">
-                    <p class="text-sm text-gray-500">¿Estás seguro de que deseas cancelar todas las exhibiciones para esta fecha? Esta acción no se puede deshacer.</p>
+    <div id="cancelAllConfirmationModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-[10000] flex items-center justify-center">
+        <div class="relative mx-auto p-6 border w-96 shadow-xl rounded-lg bg-white transform transition-all">
+            <div class="text-center">
+                {{-- Icono de advertencia --}}
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                    <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
                 </div>
-                <div class="items-center px-4 py-3">
-                    <button id="cancelAllCancelButton" class="px-4 py-2 mr-2 bg-gray-300 text-gray-700 text-base font-medium rounded-md w-1/2 shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200">
+                
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Confirmar Cancelación Masiva</h3>
+                <div class="mt-2">
+                    <p class="text-sm text-gray-600">¿Estás seguro de que deseas cancelar todas las exhibiciones para esta fecha? Esta acción no se puede deshacer.</p>
+                </div>
+                
+                <div class="mt-6 flex justify-center space-x-3">
+                    <button id="cancelAllCancelButton" 
+                            class="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-md shadow-sm hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200">
                         No, Mantener
                     </button>
-                    <button id="confirmCancelAllButton" class="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-1/2 shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300">
+                    <button id="confirmCancelAllButton" 
+                            class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200">
                         Sí, Cancelar Todo
                     </button>
                 </div>
@@ -679,55 +698,40 @@
 
         function showGeneralMessageModal(title, message, type = 'success') {
             const modal = document.getElementById('confirmationModal');
-            const modalTitle = modal.querySelector('h3');
-            const modalMessage = modal.querySelector('p');
-            const modalIcon = modal.querySelector('.mx-auto.flex');
-            const modalButton = modal.querySelector('button');
-
-            // Configurar el ícono según el tipo
+            const modalTitle = document.getElementById('confirmationModalTitle');
+            const modalMessage = document.getElementById('confirmationModalMessage');
+            const modalIcon = document.getElementById('confirmationModalIcon');
+            
+            // Resetear clases del icono
+            modalIcon.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4';
+            
+            // Configurar el icono según el tipo de mensaje
             if (type === 'success') {
+                modalIcon.classList.add('bg-green-100');
                 modalIcon.innerHTML = `
                     <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                     </svg>
                 `;
-                modalIcon.classList.remove('bg-yellow-100', 'bg-red-100');
-                modalIcon.classList.add('bg-green-100');
-                modalTitle.classList.remove('text-yellow-600', 'text-red-600');
-                modalTitle.classList.add('text-green-600');
-                modalButton.classList.remove('bg-yellow-500', 'hover:bg-yellow-600', 'focus:ring-yellow-300', 'bg-red-500', 'hover:bg-red-600', 'focus:ring-red-300');
-                modalButton.classList.add('bg-green-500', 'hover:bg-green-600', 'focus:ring-green-300');
             } else if (type === 'error') {
+                modalIcon.classList.add('bg-red-100');
                 modalIcon.innerHTML = `
                     <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                     </svg>
                 `;
-                modalIcon.classList.remove('bg-green-100', 'bg-yellow-100');
-                modalIcon.classList.add('bg-red-100');
-                modalTitle.classList.remove('text-green-600', 'text-yellow-600');
-                modalTitle.classList.add('text-red-600');
-                modalButton.classList.remove('bg-green-500', 'hover:bg-green-600', 'focus:ring-green-300', 'bg-yellow-500', 'hover:bg-yellow-600', 'focus:ring-yellow-300');
-                modalButton.classList.add('bg-red-500', 'hover:bg-red-600', 'focus:ring-red-300');
             } else if (type === 'warning') {
+                modalIcon.classList.add('bg-yellow-100');
                 modalIcon.innerHTML = `
                     <svg class="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                     </svg>
                 `;
-                modalIcon.classList.remove('bg-green-100', 'bg-red-100');
-                modalIcon.classList.add('bg-yellow-100');
-                modalTitle.classList.remove('text-green-600', 'text-red-600');
-                modalTitle.classList.add('text-yellow-600');
-                modalButton.classList.remove('bg-green-500', 'hover:bg-green-600', 'focus:ring-green-300', 'bg-red-500', 'hover:bg-red-600', 'focus:ring-red-300');
-                modalButton.classList.add('bg-yellow-500', 'hover:bg-yellow-600', 'focus:ring-yellow-300');
             }
 
-            // Configurar título y mensaje
             modalTitle.textContent = title;
             modalMessage.textContent = message;
 
-            // Mostrar el modal
             modal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
         }

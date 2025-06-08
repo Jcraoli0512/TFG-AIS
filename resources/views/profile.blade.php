@@ -183,14 +183,30 @@ use Illuminate\Support\Facades\Storage;
                     <div>
                         <h4 class="font-semibold text-gray-700">Técnica</h4>
                         <p id="artworkTechnique" class="text-gray-600"></p>
+                        <input type="text" id="editArtworkTechnique" class="hidden mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
                     </div>
                     <div>
                         <h4 class="font-semibold text-gray-700">Año</h4>
                         <p id="artworkYear" class="text-gray-600"></p>
+                        <input type="text" id="editArtworkYear" class="hidden mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
                     </div>
                     <div>
                         <h4 class="font-semibold text-gray-700">Descripción</h4>
                         <p id="artworkDescription" class="text-gray-600 whitespace-pre-line"></p>
+                        <textarea id="editArtworkDescription" rows="3" class="hidden mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+                    </div>
+                    <div id="editArtworkButtons" class="hidden mt-4">
+                        <button id="saveArtworkChanges" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Guardar cambios
+                        </button>
+                        <button id="cancelArtworkEdit" class="ml-3 inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Cancelar
+                        </button>
+                    </div>
+                    <div id="editArtworkToggle" class="mt-4">
+                        <button id="toggleArtworkEdit" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Editar obra
+                        </button>
                     </div>
                 </div>
             </div>
@@ -443,6 +459,15 @@ use Illuminate\Support\Facades\Storage;
                 document.getElementById('artworkTechnique').textContent = data.technique;
                 document.getElementById('artworkYear').textContent = data.year;
                 document.getElementById('artworkDescription').textContent = data.description;
+                
+                // Si el usuario es el artista, mostrar el botón de editar
+                if (data.is_owner) {
+                    document.getElementById('editArtworkToggle').classList.remove('hidden');
+                    // Guardar el ID de la obra para la edición
+                    document.getElementById('editArtworkToggle').setAttribute('data-artwork-id', artworkId);
+                } else {
+                    document.getElementById('editArtworkToggle').classList.add('hidden');
+                }
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -452,14 +477,107 @@ use Illuminate\Support\Facades\Storage;
     function closeArtworkModal() {
         const modal = document.getElementById('artworkViewModal');
         modal.classList.add('hidden');
+        // Resetear el estado de edición
+        toggleEditMode(false);
     }
 
-    // Cerrar el modal al hacer clic fuera
-    window.addEventListener('click', function(event) {
-        const modal = document.getElementById('artworkViewModal');
-        if (event.target === modal) {
-            closeArtworkModal();
+    // Función para alternar el modo de edición
+    function toggleEditMode(show) {
+        const techniqueText = document.getElementById('artworkTechnique');
+        const techniqueInput = document.getElementById('editArtworkTechnique');
+        const yearText = document.getElementById('artworkYear');
+        const yearInput = document.getElementById('editArtworkYear');
+        const descriptionText = document.getElementById('artworkDescription');
+        const descriptionInput = document.getElementById('editArtworkDescription');
+        const editButtons = document.getElementById('editArtworkButtons');
+        const toggleButton = document.getElementById('toggleArtworkEdit');
+
+        if (show) {
+            // Cambiar a modo edición
+            techniqueText.classList.add('hidden');
+            techniqueInput.classList.remove('hidden');
+            techniqueInput.value = techniqueText.textContent;
+            
+            yearText.classList.add('hidden');
+            yearInput.classList.remove('hidden');
+            yearInput.value = yearText.textContent;
+            
+            descriptionText.classList.add('hidden');
+            descriptionInput.classList.remove('hidden');
+            descriptionInput.value = descriptionText.textContent;
+            
+            editButtons.classList.remove('hidden');
+            toggleButton.classList.add('hidden');
+        } else {
+            // Cambiar a modo visualización
+            techniqueText.classList.remove('hidden');
+            techniqueInput.classList.add('hidden');
+            
+            yearText.classList.remove('hidden');
+            yearInput.classList.add('hidden');
+            
+            descriptionText.classList.remove('hidden');
+            descriptionInput.classList.add('hidden');
+            
+            editButtons.classList.add('hidden');
+            toggleButton.classList.remove('hidden');
         }
+    }
+
+    // Event listeners para los botones de edición
+    document.getElementById('toggleArtworkEdit').addEventListener('click', function() {
+        toggleEditMode(true);
+    });
+
+    document.getElementById('cancelArtworkEdit').addEventListener('click', function() {
+        toggleEditMode(false);
+    });
+
+    document.getElementById('saveArtworkChanges').addEventListener('click', function() {
+        const artworkId = document.getElementById('editArtworkToggle').getAttribute('data-artwork-id');
+        
+        if (!artworkId) {
+            showSuccessModal('No se pudo identificar la obra.');
+            return;
+        }
+
+        const technique = document.getElementById('editArtworkTechnique').value;
+        const year = document.getElementById('editArtworkYear').value;
+        const description = document.getElementById('editArtworkDescription').value;
+
+        fetch(`/artworks/${artworkId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                technique: technique,
+                year: year,
+                description: description
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Actualizar los textos en la modal
+                document.getElementById('artworkTechnique').textContent = technique;
+                document.getElementById('artworkYear').textContent = year;
+                document.getElementById('artworkDescription').textContent = description;
+                
+                // Volver al modo visualización
+                toggleEditMode(false);
+                
+                // Mostrar mensaje de éxito
+                showSuccessModal('Cambios guardados con éxito');
+            } else {
+                showSuccessModal(data.message || 'Error al guardar los cambios');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showSuccessModal('Error al guardar los cambios');
+        });
     });
 
     // Funciones para el modal de imagen panorámica
