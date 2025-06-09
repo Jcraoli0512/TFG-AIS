@@ -39,10 +39,6 @@
                     <div class="md:w-1/3">
                         <div class="space-y-4">
                             <div>
-                                <h4 class="font-semibold text-gray-700">Artista</h4>
-                                <p id="artworkArtist"><a href="#" id="artworkArtistLink" class="text-gray-600 hover:underline"></a></p>
-                            </div>
-                            <div>
                                 <h4 class="font-semibold text-gray-700">Técnica</h4>
                                 <p id="artworkTechnique" class="text-gray-600"></p>
                             </div>
@@ -77,18 +73,9 @@
                 document.getElementById('artworkTitle').textContent = data.title;
                 document.getElementById('artworkImage').src = data.image_url;
                 document.getElementById('artworkImage').alt = data.title;
-
-                const artworkArtistLink = document.getElementById('artworkArtistLink');
-                artworkArtistLink.textContent = data.artist_name;
-                if (isAuthenticated) {
-                    artworkArtistLink.href = `/profile/${data.artist_id}`;
-                } else {
-                    artworkArtistLink.href = `{{ route('login') }}`;
-                }
-
-                document.getElementById('artworkTechnique').textContent = data.technique;
-                document.getElementById('artworkYear').textContent = data.year;
-                document.getElementById('artworkDescription').textContent = data.description;
+                document.getElementById('artworkTechnique').textContent = data.technique || 'No especificada';
+                document.getElementById('artworkYear').textContent = data.year || 'No especificado';
+                document.getElementById('artworkDescription').textContent = data.description || 'Sin descripción disponible';
             })
             .catch(error => {
                 console.error('Error al cargar los detalles de la obra:', error);

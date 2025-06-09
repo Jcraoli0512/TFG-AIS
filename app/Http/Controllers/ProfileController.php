@@ -38,44 +38,52 @@ class ProfileController extends Controller
     {
         try {
             $user = $request->user();
-            \Log::info('Iniciando actualización de perfil', ['user_id' => $user->id]);
+            Log::info('Iniciando actualización de perfil', ['user_id' => $user->id]);
 
             // Actualizar foto de perfil si se proporciona una nueva
             if ($request->hasFile('profile_photo')) {
-                \Log::info('Nueva foto de perfil detectada');
+                Log::info('Nueva foto de perfil detectada');
                 
                 // Eliminar foto anterior si existe
                 if ($user->profile_photo) {
-                    \Log::info('Eliminando foto anterior', ['old_photo' => $user->profile_photo]);
+                    Log::info('Eliminando foto anterior', ['old_photo' => $user->profile_photo]);
                     Storage::disk('public')->delete($user->profile_photo);
                 }
 
                 // Guardar nueva foto
                 $path = $request->file('profile_photo')->store('profile-photos', 'public');
-                \Log::info('Nueva foto guardada', ['path' => $path]);
+                Log::info('Nueva foto guardada', ['path' => $path]);
                 $user->profile_photo = $path;
             }
 
-            // Actualizar otros campos
+            // Actualizar campos básicos
             $user->name = $request->name;
             $user->email = $request->email;
             $user->biography = $request->biography;
 
+            // Actualizar redes sociales
+            $user->instagram = $request->instagram;
+            $user->twitter = $request->twitter;
+            $user->tiktok = $request->tiktok;
+            $user->youtube = $request->youtube;
+            $user->pinterest = $request->pinterest;
+            $user->linkedin = $request->linkedin;
+
             // Si el email cambió, resetear la verificación
             if ($user->isDirty('email')) {
-                \Log::info('Email cambiado, reseteando verificación');
+                Log::info('Email cambiado, reseteando verificación');
                 $user->email_verified_at = null;
             }
 
             $user->save();
-            \Log::info('Perfil actualizado exitosamente');
+            Log::info('Perfil actualizado exitosamente');
 
             return response()->json([
                 'message' => 'Perfil actualizado correctamente',
                 'user' => $user->fresh()
             ]);
         } catch (\Exception $e) {
-            \Log::error('Error al actualizar perfil', [
+            Log::error('Error al actualizar perfil', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);

@@ -46,22 +46,6 @@
         @enderror
     </div>
 
-    {{-- Optional: Select Collection --}}
-    {{-- You would need to pass collections to this view if you want this functionality --}}
-    {{-- <div>
-        <label for="collection_id" class="block text-sm font-medium text-gray-700">Colección (Opcional)</label>
-        <select name="collection_id" id="collection_id"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-            <option value="">Selecciona una colección...</option>
-            {{-- @foreach($collections as $collection)
-                <option value="{{ $collection->id }}">{{ $collection->name }}</option>
-            @endforeach --}}
-        </select>
-         @error('collection_id')
-            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-        @enderror
-    </div> --}}
-
     <div class="flex justify-end space-x-3">
         <button type="button" class="close-modal inline-flex items-center px-4 py-2 bg-gray-200 border border-transparent rounded-md font-semibold text-xs text-gray-800 uppercase tracking-widest hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
             Cancelar

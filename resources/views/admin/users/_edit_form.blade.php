@@ -71,6 +71,55 @@
         @enderror
     </div>
 
+    {{-- Redes Sociales --}}
+    <div class="mb-4">
+        <h4 class="text-md font-semibold text-gray-900 mb-3">Redes Sociales</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+                <label for="instagram" class="block text-sm font-medium text-gray-700">Instagram</label>
+                <input type="url" name="instagram" id="instagram" value="{{ old('instagram', $user->instagram) }}" placeholder="https://instagram.com/usuario" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                @error('instagram')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+            <div>
+                <label for="twitter" class="block text-sm font-medium text-gray-700">Twitter/X</label>
+                <input type="url" name="twitter" id="twitter" value="{{ old('twitter', $user->twitter) }}" placeholder="https://twitter.com/usuario" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                @error('twitter')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+            <div>
+                <label for="tiktok" class="block text-sm font-medium text-gray-700">TikTok</label>
+                <input type="url" name="tiktok" id="tiktok" value="{{ old('tiktok', $user->tiktok) }}" placeholder="https://tiktok.com/@usuario" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                @error('tiktok')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+            <div>
+                <label for="youtube" class="block text-sm font-medium text-gray-700">YouTube</label>
+                <input type="url" name="youtube" id="youtube" value="{{ old('youtube', $user->youtube) }}" placeholder="https://youtube.com/@usuario" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                @error('youtube')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+            <div>
+                <label for="pinterest" class="block text-sm font-medium text-gray-700">Pinterest</label>
+                <input type="url" name="pinterest" id="pinterest" value="{{ old('pinterest', $user->pinterest) }}" placeholder="https://pinterest.com/usuario" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                @error('pinterest')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+            <div>
+                <label for="linkedin" class="block text-sm font-medium text-gray-700">LinkedIn</label>
+                <input type="url" name="linkedin" id="linkedin" value="{{ old('linkedin', $user->linkedin) }}" placeholder="https://linkedin.com/in/usuario" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                @error('linkedin')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+        </div>
+    </div>
+
     {{-- Sección de Imagen Panorámica --}}
     <div class="mt-8">
         <h3 class="text-lg font-medium text-gray-900 mb-4">Imagen Panorámica</h3>

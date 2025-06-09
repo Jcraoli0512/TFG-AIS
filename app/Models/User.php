@@ -29,6 +29,13 @@ class User extends Authenticatable
         'instagram',
         'facebook',
         'twitter',
+        'tiktok',
+        'youtube',
+        'pinterest',
+        'behance',
+        'deviantart',
+        'artstation',
+        'linkedin',
         'role',
         'is_active',
         'google_id',
@@ -71,11 +78,6 @@ class User extends Authenticatable
     public function exhibitions()
     {
         return $this->hasMany(Exhibition::class);
-    }
-
-    public function images()
-    {
-        return $this->hasMany(Image::class);
     }
 
     public function isAdmin()
