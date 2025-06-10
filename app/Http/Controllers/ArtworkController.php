@@ -25,8 +25,16 @@ class ArtworkController extends Controller
      */
     public function create(Request $request)
     {
+        // Verificar autenticación manualmente
+        if (!auth()->check()) {
+            if ($request->ajax()) {
+                return response()->json(['error' => 'No autenticado'], 401);
+            }
+            return redirect()->route('login');
+        }
+
         if ($request->ajax()) {
-            return view('artworks._create_form')->render();
+            return view('artworks._create_form');
         }
 
         // Fallback para solicitudes no AJAX (opcional, puede redirigir o mostrar página completa)
@@ -43,7 +51,7 @@ class ArtworkController extends Controller
             'description' => 'nullable|string',
             'technique' => 'nullable|string|max:255',
             'year' => 'nullable|integer|min:1900|max:' . date('Y'),
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // máximo 2MB
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'collection_id' => 'nullable|exists:collections,id'
         ]);
 
@@ -137,20 +145,55 @@ class ArtworkController extends Controller
     {
         // Verificar que el usuario es el propietario de la obra
         if ($artwork->user_id !== Auth::id()) {
+            if (request()->ajax()) {
+                return response()->json(['success' => false, 'message' => 'No tienes permiso para eliminar esta obra'], 403);
+            }
             return redirect()->back()
                 ->with('error', 'No tienes permiso para eliminar esta obra');
         }
 
-        // Eliminar la imagen del almacenamiento
-        if ($artwork->image_path) {
-            Storage::disk('public')->delete($artwork->image_path);
+        try {
+            // Verificar si la obra está siendo exhibida
+            $hasExhibitions = $artwork->displayDates()->exists();
+            if ($hasExhibitions) {
+                if (request()->ajax()) {
+                    return response()->json([
+                        'success' => false, 
+                        'message' => 'No se puede eliminar esta obra porque está siendo exhibida. Primero debes cancelar todas sus exhibiciones.'
+                    ], 422);
+                }
+                return redirect()->back()
+                    ->with('error', 'No se puede eliminar esta obra porque está siendo exhibida. Primero debes cancelar todas sus exhibiciones.');
+            }
+
+            // Eliminar la imagen del almacenamiento
+            if ($artwork->image_path) {
+                Storage::disk('public')->delete($artwork->image_path);
+            }
+
+            // Eliminar la obra
+            $artwork->delete();
+
+            if (request()->ajax()) {
+                return response()->json(['success' => true, 'message' => 'Obra eliminada correctamente']);
+            }
+
+            return redirect()->back()
+                ->with('success', 'Obra eliminada correctamente');
+        } catch (\Exception $e) {
+            // Si es un error de integridad referencial, mostrar mensaje específico
+            if (str_contains($e->getMessage(), 'foreign key constraint')) {
+                $message = 'No se puede eliminar esta obra porque está siendo exhibida. Primero debes cancelar todas sus exhibiciones.';
+            } else {
+                $message = 'Error al eliminar la obra: ' . $e->getMessage();
+            }
+
+            if (request()->ajax()) {
+                return response()->json(['success' => false, 'message' => $message], 500);
+            }
+            return redirect()->back()
+                ->with('error', $message);
         }
-
-        // Eliminar la obra
-        $artwork->delete();
-
-        return redirect()->back()
-            ->with('success', 'Obra eliminada correctamente');
     }
 
     // Nuevo método para obtener la vista parcial de selección de obras
@@ -160,7 +203,7 @@ class ArtworkController extends Controller
         $user = Auth::user();
             if (!$user) {
                 Log::error('ArtworkController@getArtworkSelectionPartial: Usuario no autenticado');
-                return response()->json(['message' => 'Usuario no autenticado.'], 401); // No autenticado
+                return response()->json(['message' => 'Usuario no autenticado.'], 401);
             }
         $artworks = $user->artworks;
         Log::info('ArtworkController@getArtworkSelectionPartial: Obras encontradas para el usuario', ['user_id' => $user->id, 'count' => $artworks->count()]);
@@ -222,5 +265,17 @@ class ArtworkController extends Controller
                         });
 
         return response()->json($artworks);
+    }
+
+    /**
+     * Verificar si una obra está siendo exhibida
+     */
+    public function checkExhibitions(Artwork $artwork)
+    {
+        $hasExhibitions = $artwork->displayDates()->exists();
+        
+        return response()->json([
+            'has_exhibitions' => $hasExhibitions
+        ]);
     }
 }

@@ -1,4 +1,4 @@
-<form id="editUserForm" action="{{ route('admin.users.update', $user) }}" method="POST" class="space-y-6">
+<form id="editUserForm" action="{{ route('admin.users.update', $user) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
     @csrf
     @method('PUT')
 
@@ -71,6 +71,37 @@
             @error('biography')
                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
             @enderror
+        </div>
+    </div>
+
+    {{-- Imagen de Perfil --}}
+    <div class="border-b border-gray-200 pb-6">
+        <h4 class="text-md font-semibold text-gray-900 mb-4">Imagen de Perfil</h4>
+        <div class="flex items-center space-x-6">
+            <div class="flex-shrink-0">
+                @if($user->profile_photo)
+                    <img src="{{ asset('storage/' . $user->profile_photo) }}" 
+                         alt="Imagen de perfil actual" 
+                         class="w-24 h-24 rounded-full object-cover border-2 border-gray-200">
+                @else
+                    <div class="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center border-2 border-gray-300">
+                        <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                    </div>
+                @endif
+            </div>
+            <div class="flex-1">
+                <div class="mb-4">
+                    <label for="profile_photo" class="block text-sm font-medium text-gray-700 mb-2">Cambiar imagen de perfil</label>
+                    <input type="file" name="profile_photo" id="profile_photo" accept="image/*" 
+                           class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                    <p class="mt-1 text-sm text-gray-500">Formatos permitidos: JPG, PNG, GIF. Tamaño máximo: 2MB</p>
+                    @error('profile_photo')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
         </div>
     </div>
 

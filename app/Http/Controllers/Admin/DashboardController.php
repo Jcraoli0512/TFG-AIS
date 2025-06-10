@@ -118,8 +118,27 @@ class DashboardController extends Controller
                 'email' => 'required|email|unique:users,email,' . $user->id,
                 'role' => 'required|in:admin,artist',
                 'is_active' => 'boolean',
-                'biography' => 'nullable|string|max:1000'
+                'biography' => 'nullable|string|max:1000',
+                'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'instagram' => 'nullable|url|max:255',
+                'twitter' => 'nullable|url|max:255',
+                'tiktok' => 'nullable|url|max:255',
+                'youtube' => 'nullable|url|max:255',
+                'pinterest' => 'nullable|url|max:255',
+                'linkedin' => 'nullable|url|max:255'
             ]);
+
+            // Manejar la imagen de perfil si se subió una nueva
+            if ($request->hasFile('profile_photo')) {
+                // Eliminar la imagen anterior si existe
+                if ($user->profile_photo) {
+                    Storage::disk('public')->delete($user->profile_photo);
+                }
+                
+                // Guardar la nueva imagen
+                $profilePhotoPath = $request->file('profile_photo')->store('profile-photos', 'public');
+                $validated['profile_photo'] = $profilePhotoPath;
+            }
 
             $user->update($validated);
 
@@ -234,7 +253,7 @@ class DashboardController extends Controller
      * Elimina la imagen panorámica de un usuario.
      *
      * @param  \App\Models\User  $user
-     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
      */
     public function deletePanoramicImage(User $user, Request $request)
     {
@@ -363,31 +382,73 @@ class DashboardController extends Controller
                 ->where('is_approved', true)
                 ->exists();
 
-            if ($existingApproved) {
-                Log::warning('Ya existe una exhibición aprobada para esta fecha al intentar aprobar un lote.', ['user_id' => $userId, 'date' => $date]);
+            // Primero, verificar si existen las solicitudes
+            $existingRequests = ArtworkDisplayDate::where('user_id', $userId)
+                ->where('is_approved', false)
+                ->get();
+
+            \Log::info('Solicitudes existentes:', [
+                'count' => $existingRequests->count(),
+                'requests' => $existingRequests->map(function($req) {
+                    return [
+                        'id' => $req->id,
+                        'user_id' => $req->user_id,
+                        'display_date' => $req->display_date,
+                        'is_approved' => $req->is_approved
+                    ];
+                })->toArray()
+            ]);
+            
+            // Encontrar todas las solicitudes pendientes para este usuario y fecha
+            $requestsToApprove = ArtworkDisplayDate::where('user_id', $userId)
+                ->whereRaw('DATE(display_date) = ?', [$parsedDate])
+                ->where('is_approved', false)
+                ->get();
+
+            \Log::info('Solicitudes a aprobar:', [
+                'count' => $requestsToApprove->count(),
+                'sql' => ArtworkDisplayDate::where('user_id', $userId)
+                    ->whereRaw('DATE(display_date) = ?', [$parsedDate])
+                    ->where('is_approved', false)
+                    ->toSql()
+            ]);
+
+            if ($requestsToApprove->isEmpty()) {
+                \Log::warning('No se encontraron solicitudes pendientes para el lote');
                 return response()->json([
-                    'message' => 'Ya existe una exhibición aprobada para esta fecha.'
-                ], 409); // Conflicto
+                    'success' => false,
+                    'message' => 'No se encontraron solicitudes pendientes para este lote.'
+                ], 404);
             }
 
-            // Actualizar todas las solicitudes pendientes para ese usuario y fecha a aprobadas
-            ArtworkDisplayDate::where('user_id', $userId)
-                ->where('display_date', $parsedDate)
-                ->where('is_approved', false)
-                ->update(['is_approved' => true]);
+            // Actualizar todas las solicitudes a aprobadas
+            foreach ($requestsToApprove as $request) {
+                $request->update(['is_approved' => true]);
+                \Log::info('Solicitud actualizada:', [
+                    'id' => $request->id,
+                    'user_id' => $request->user_id,
+                    'display_date' => $request->display_date
+                ]);
+            }
 
-            Log::info('Lote de solicitudes aprobado correctamente.', ['user_id' => $userId, 'date' => $date]);
-            return response()->json(['message' => 'Lote de solicitudes aprobado correctamente.']);
-        } catch (\Exception $e) {
-            Log::error('Error al aprobar el lote de solicitudes:', [
-                'user_id' => $userId,
-                'date' => $date,
-                'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
+            return response()->json([
+                'success' => true,
+                'message' => 'Lote de solicitudes aprobado correctamente'
             ]);
-            return response()->json(['error' => 'Error al aprobar el lote de solicitudes: ' . $e->getMessage()], 500);
+        } catch (\Exception $e) {
+            \Log::error('Error en approveBatch: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al aprobar el lote de solicitudes: ' . $e->getMessage(),
+                'debug_info' => [
+                    'userId' => $userId,
+                    'date' => $date,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]
+            ], 500);
         }
     }
 
@@ -401,33 +462,38 @@ class DashboardController extends Controller
     public function rejectBatch($userId, $date)
     {
         try {
+            // Convertir la fecha al formato correcto
             $parsedDate = Carbon::parse($date)->format('Y-m-d');
-
-            // Eliminar todas las solicitudes pendientes para ese usuario y fecha
-            ArtworkDisplayDate::where('user_id', $userId)
-                ->where('display_date', $parsedDate)
+            
+            // Encontrar y eliminar todas las solicitudes pendientes para este usuario y fecha
+            $deletedCount = ArtworkDisplayDate::where('user_id', $userId)
+                ->whereRaw('DATE(display_date) = ?', [$parsedDate])
                 ->where('is_approved', false)
                 ->delete();
 
-            Log::info('Lote de solicitudes rechazado correctamente.', ['user_id' => $userId, 'date' => $date]);
+            Log::info('Lote de solicitudes rechazado correctamente.', ['user_id' => $userId, 'date' => $parsedDate]);
             return response()->json(['message' => 'Lote de solicitudes rechazado correctamente.']);
         } catch (\Exception $e) {
-            Log::error('Error al rechazar el lote de solicitudes:', [
-                'user_id' => $userId,
-                'date' => $date,
-                'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            return response()->json(['error' => 'Error al rechazar el lote de solicitudes: ' . $e->getMessage()], 500);
+            \Log::error('Error en rejectBatch: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al rechazar el lote de solicitudes: ' . $e->getMessage(),
+                'debug_info' => [
+                    'userId' => $userId,
+                    'date' => $date,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]
+            ], 500);
         }
     }
 
     /**
      * Obtiene las obras de arte para un grupo específico de solicitudes de exhibición.
      *
-     * @param  string  $groupKey  La clave del grupo (user_id-YYYY-MM-DD).
+     * @param  string  $groupKey  Formatted as 'userId-displayDate'
      * @return \Illuminate\Http\JsonResponse
      */
     public function getGroupArtworks($groupKey)

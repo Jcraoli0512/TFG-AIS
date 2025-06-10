@@ -89,8 +89,14 @@ Route::middleware(['auth'])->group(function () {
 // Nueva ruta para obtener la vista parcial de selección de obras
 Route::get('/artworks/selection-partial', [ArtworkController::class, 'getArtworkSelectionPartial'])->middleware(['auth'])->name('artworks.selection-partial');
 
+// Ruta específica para el formulario de creación de obras
+Route::get('/artworks/create/form', [ArtworkController::class, 'create'])->middleware(['auth'])->name('artworks.create.form');
+
 // Ruta pública para ver detalles de una obra (sin autenticación)
 Route::get('/artworks/{artwork}', [ArtworkController::class, 'show'])->name('artworks.show.public');
+
+// Ruta para verificar si una obra está siendo exhibida
+Route::get('/artworks/{artwork}/check-exhibitions', [ArtworkController::class, 'checkExhibitions'])->name('artworks.check-exhibitions');
 
 // Rutas para la gestión de obras (CRUD) - requiere autenticación
 Route::resource('artworks', ArtworkController::class)->middleware(['auth'])->except(['show']);

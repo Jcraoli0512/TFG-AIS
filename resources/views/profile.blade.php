@@ -2,6 +2,7 @@
 
 @php
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 @endphp
 
 @section('title', 'Perfil de ' . $user->name)
@@ -40,7 +41,7 @@ use Illuminate\Support\Facades\Storage;
                         'twitter' => ['icon' => 'M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z', 'label' => 'Twitter'],
                         'tiktok' => ['icon' => 'M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z', 'label' => 'TikTok'],
                         'youtube' => ['icon' => 'M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z', 'label' => 'YouTube'],
-                        'pinterest' => ['icon' => 'M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.174-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.402.165-1.495-.69-2.433-2.878-2.878-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.357-.629-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24.009 12.017 24.009c6.624 0 11.99-5.367 11.99-11.988C24.007 5.367 18.641.001.012.001z', 'label' => 'Pinterest'],
+                        'pinterest' => ['icon' => 'M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.174-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.402.165-1.495-.69-2.433-2.878-2.878-2.878-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.357-.629-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24.009 12.017 24.009c6.624 0 11.99-5.367 11.99-11.988C24.007 5.367 18.641.001.012.001z', 'label' => 'Pinterest'],
                         'linkedin' => ['icon' => 'M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z', 'label' => 'LinkedIn']
                     ];
                     
@@ -109,16 +110,11 @@ use Illuminate\Support\Facades\Storage;
                                         {{-- Botón de eliminar (solo visible para el propietario) --}}
                                         @auth
                                             @if(auth()->user()->id === $user->id)
-                                                <form action="{{ route('artworks.destroy', $artwork) }}" 
-                                                      method="POST" 
-                                                      onsubmit="return confirm('¿Estás seguro de que deseas eliminar esta obra?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" 
-                                                            class="inline-flex items-center px-3 py-1 bg-red-600 text-white text-sm rounded-md hover:bg-red-700">
-                                                        Eliminar
-                                                    </button>
-                                                </form>
+                                                <button type="button" 
+                                                        onclick="showConfirmationModal('¿Eliminar obra?', '¿Estás seguro de que deseas eliminar esta obra? Esta acción no se puede deshacer.', '{{ $artwork->id }}', 'deleteArtwork')"
+                                                        class="inline-flex items-center px-3 py-1 bg-red-600 text-white text-sm rounded-md hover:bg-red-700">
+                                                    Eliminar
+                                                </button>
                                             @endif
                                         @endauth
                                     </div>
@@ -300,6 +296,29 @@ use Illuminate\Support\Facades\Storage;
     </div>
 </div>
 
+{{-- Confirmation Modal --}}
+<div id="confirmationModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50 flex items-center justify-center">
+    <div class="relative mx-auto p-6 border w-11/12 max-w-md shadow-xl rounded-lg bg-white transform transition-all">
+        <div class="flex items-center justify-center mb-4">
+            <div id="confirmationModalIcon" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4">
+                <!-- Icon will be set dynamically -->
+            </div>
+        </div>
+        <div class="text-center">
+            <h3 class="text-lg font-semibold text-gray-900 mb-2" id="confirmationModalTitle"></h3>
+            <p class="text-sm text-gray-600" id="confirmationModalMessage"></p>
+        </div>
+        <div class="flex justify-center space-x-3 mt-6">
+            <button id="cancelConfirmationButton" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                Cancelar
+            </button>
+            <button id="confirmActionButton" class="px-4 py-2 text-sm font-medium text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2">
+                Confirmar
+            </button>
+        </div>
+    </div>
+</div>
+
 {{-- Success Modal --}}
 <div id="successModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden" style="z-index: 100;">
     <div class="relative top-20 mx-auto p-5 border max-w-sm w-full shadow-lg rounded-md bg-white">
@@ -330,27 +349,35 @@ use Illuminate\Support\Facades\Storage;
 
     // Function to open modal and load content
     async function openModal(modalElement, modalBodyElement, fetchUrl) {
+        console.log('openModal llamado con URL:', fetchUrl);
+        
         // Show loading message
         modalBodyElement.innerHTML = '<p>Cargando formulario...</p>';
         modalElement.classList.remove('hidden');
+        console.log('Modal mostrado');
 
         // Fetch form content via AJAX
         try {
-            console.log('Fetching URL:', fetchUrl);
+            console.log('Iniciando fetch a:', fetchUrl);
             const response = await fetch(fetchUrl, {
+                method: 'GET',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                     'Accept': 'text/html, application/xhtml+xml',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
+                    'Cache-Control': 'no-cache'
                 },
-                credentials: 'same-origin'
+                credentials: 'include'
             });
             console.log('Response status:', response.status);
+            
             const data = await response.text();
-            console.log('Response data:', data);
+            console.log('Response data length:', data.length);
 
             if (response.ok) {
+                console.log('Response OK, insertando HTML');
                 modalBodyElement.innerHTML = data;
+                console.log('HTML insertado correctamente');
                 
                 // Añadir manejador de envío del formulario
                 const form = modalBodyElement.querySelector('form');
@@ -431,12 +458,12 @@ use Illuminate\Support\Facades\Storage;
                     });
                 });
             } else {
+                console.error('Response not OK:', response.status, response.statusText);
                 modalBodyElement.innerHTML = `<p class="text-red-600">Error al cargar el formulario (${response.status}): ${response.statusText}</p>`;
-                console.error('Error loading form:', response.statusText);
             }
         } catch (error) {
+            console.error('Error en fetch:', error);
             modalBodyElement.innerHTML = '<p class="text-red-600">Error de red al cargar el formulario.</p>';
-            console.error('Network error loading form:', error);
         }
     }
 
@@ -463,7 +490,10 @@ use Illuminate\Support\Facades\Storage;
     if (openAddArtworkModalButton) {
         openAddArtworkModalButton.addEventListener('click', function(event) {
             event.stopPropagation();
-            openModal(addArtworkModal, document.getElementById('addArtworkModalBody'), '{{ route('artworks.create') }}');
+            console.log('Botón de añadir obra clickeado');
+            const url = '{{ route('artworks.create.form') }}';
+            console.log('URL a cargar:', url);
+            openModal(addArtworkModal, document.getElementById('addArtworkModalBody'), url);
         });
     }
 
@@ -690,6 +720,184 @@ use Illuminate\Support\Facades\Storage;
         const successModal = document.getElementById('successModal');
         if (event.target === successModal) {
             closeSuccessModal();
+        }
+    });
+
+    // Variables para la modal de confirmación
+    const confirmationModal = document.getElementById('confirmationModal');
+    const confirmationModalTitle = document.getElementById('confirmationModalTitle');
+    const confirmationModalMessage = document.getElementById('confirmationModalMessage');
+    const confirmationModalIcon = document.getElementById('confirmationModalIcon');
+    const cancelConfirmationButton = document.getElementById('cancelConfirmationButton');
+    const confirmActionButton = document.getElementById('confirmActionButton');
+
+    let currentAction = null;
+    let currentArtworkId = null;
+
+    // Funciones para el modal de confirmación
+    function showConfirmationModal(title, message, artworkId, action) {
+        // Limpiar el modal antes de configurarlo
+        resetConfirmationModal();
+        
+        if (action === 'deleteArtwork') {
+            // Primero verificar si la obra está siendo exhibida
+            checkArtworkExhibitions(artworkId).then(hasExhibitions => {
+                if (hasExhibitions) {
+                    // Si está siendo exhibida, mostrar mensaje de advertencia
+                    confirmationModalTitle.textContent = '⚠️ Obra en exhibición';
+                    confirmationModalMessage.textContent = 'Esta obra no se puede eliminar porque está siendo exhibida.\n\nPara eliminar esta obra, primero debes cancelar todas sus exhibiciones desde el calendario.';
+                    confirmActionButton.style.display = 'none'; // Ocultar botón de eliminar
+                    cancelConfirmationButton.textContent = 'Entendido';
+                    
+                    // Cambiar el icono a advertencia
+                    confirmationModalIcon.classList.add('bg-yellow-100');
+                    confirmationModalIcon.innerHTML = `
+                        <svg class="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                        </svg>
+                    `;
+                } else {
+                    // Si no está siendo exhibida, mostrar confirmación normal
+                    confirmationModalTitle.textContent = title;
+                    confirmationModalMessage.textContent = message;
+                    confirmActionButton.style.display = 'inline-flex'; // Mostrar botón de eliminar
+                    cancelConfirmationButton.textContent = 'Cancelar';
+                    
+                    // Configurar para eliminación
+                    confirmActionButton.classList.add('bg-red-600', 'hover:bg-red-700', 'focus:ring-red-300');
+                    confirmActionButton.textContent = 'Eliminar';
+                    confirmationModalIcon.classList.add('bg-red-100');
+                    confirmationModalIcon.innerHTML = `
+                        <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                        </svg>
+                    `;
+                }
+                
+                currentArtworkId = artworkId;
+                currentAction = action;
+                confirmationModal.classList.remove('hidden');
+            });
+        } else {
+            // Para otras acciones, usar el comportamiento normal
+            confirmationModalTitle.textContent = title;
+            confirmationModalMessage.textContent = message;
+            currentArtworkId = artworkId;
+            currentAction = action;
+            confirmationModal.classList.remove('hidden');
+        }
+    }
+
+    function closeConfirmationModal() {
+        confirmationModal.classList.add('hidden');
+        currentAction = null;
+        currentArtworkId = null;
+    }
+
+    // Event listeners para la modal de confirmación
+    cancelConfirmationButton.addEventListener('click', closeConfirmationModal);
+    confirmActionButton.addEventListener('click', function() {
+        if (currentAction === 'deleteArtwork' && currentArtworkId) {
+            deleteArtwork(currentArtworkId);
+        }
+        closeConfirmationModal();
+    });
+
+    // Función para eliminar la obra
+    function deleteArtwork(artworkId) {
+        fetch(`/artworks/${artworkId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showSuccessModal(data.message || 'Obra eliminada correctamente');
+                // Recargar la página después de 2 segundos para mostrar los cambios
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            } else {
+                throw new Error(data.message || 'Error al eliminar la obra');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Mostrar mensaje específico si es sobre exhibiciones
+            if (error.message.includes('exhibida')) {
+                showSuccessModal('⚠️ ' + error.message + '\n\nPara eliminar esta obra, primero debes cancelar todas sus exhibiciones desde el calendario.');
+            } else {
+                showSuccessModal('❌ ' + error.message);
+            }
+        });
+    }
+
+    // Función para verificar si una obra está siendo exhibida
+    function checkArtworkExhibitions(artworkId) {
+        return fetch(`/artworks/${artworkId}/check-exhibitions`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => data.has_exhibitions)
+        .catch(error => {
+            console.error('Error checking exhibitions:', error);
+            return false; // En caso de error, asumir que no está exhibida
+        });
+    }
+
+    // Función para limpiar el modal de confirmación
+    function resetConfirmationModal() {
+        // Limpiar clases del botón
+        confirmActionButton.classList.remove('bg-red-600', 'hover:bg-red-700', 'focus:ring-red-300');
+        confirmActionButton.style.display = 'inline-flex';
+        confirmActionButton.textContent = 'Confirmar';
+        
+        // Limpiar clases del icono
+        confirmationModalIcon.classList.remove('bg-red-100', 'bg-yellow-100');
+        confirmationModalIcon.innerHTML = '';
+        
+        // Resetear botón cancelar
+        cancelConfirmationButton.textContent = 'Cancelar';
+        
+        // Limpiar variables
+        currentArtworkId = null;
+        currentAction = null;
+    }
+
+    // Event listener para cerrar el modal
+    document.getElementById('closeConfirmationModal').addEventListener('click', function() {
+        confirmationModal.classList.add('hidden');
+        resetConfirmationModal();
+    });
+
+    // Event listener para el botón cancelar
+    cancelConfirmationButton.addEventListener('click', function() {
+        confirmationModal.classList.add('hidden');
+        resetConfirmationModal();
+    });
+
+    // Event listener para cerrar con Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !confirmationModal.classList.contains('hidden')) {
+            confirmationModal.classList.add('hidden');
+            resetConfirmationModal();
+        }
+    });
+
+    // Event listener para cerrar haciendo clic fuera del modal
+    confirmationModal.addEventListener('click', function(e) {
+        if (e.target === confirmationModal) {
+            confirmationModal.classList.add('hidden');
+            resetConfirmationModal();
         }
     });
 </script>
