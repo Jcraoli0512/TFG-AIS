@@ -15,15 +15,15 @@ use Illuminate\Support\Facades\Log;
 class ProfileController extends Controller
 {
     /**
-     * Display the user's profile form.
+     * Muestra el formulario de perfil del usuario.
      */
     public function edit(Request $request)
     {
-        Log::info('ProfileController@edit called', [
+        Log::info('ProfileController@edit llamado', [
             'isAjax' => $request->ajax(),
             'url' => $request->url(),
             'method' => $request->method(),
-            'user' => $request->user() ? $request->user()->id : 'not authenticated'
+            'user' => $request->user() ? $request->user()->id : 'no autenticado'
         ]);
 
         return view('profile._edit_form_partial', [
@@ -32,7 +32,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * Update the user's profile information.
+     * Actualiza la información del perfil del usuario.
      */
     public function update(ProfileUpdateRequest $request): JsonResponse
     {
@@ -96,7 +96,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * Delete the user's account.
+     * Elimina la cuenta del usuario.
      */
     public function destroy(Request $request): RedirectResponse
     {
@@ -122,7 +122,7 @@ class ProfileController extends Controller
             Log::info('Iniciando actualización de imagen panorámica');
             
             $request->validate([
-                'panoramic_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120', // max 5MB
+                'panoramic_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120', // máximo 5MB
             ]);
 
             $user = $request->user();

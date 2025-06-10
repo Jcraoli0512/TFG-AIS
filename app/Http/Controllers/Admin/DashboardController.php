@@ -10,6 +10,8 @@ use Illuminate\View\View;
 use Illuminate\Support\Facades\Storage;
 use App\Models\ArtworkDisplayDate;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
@@ -29,13 +31,13 @@ class DashboardController extends Controller
     }
 
     /**
-     * Display a listing of the users.
+     * Muestra un listado de los usuarios.
      */
     public function users(Request $request)
     {
         $query = User::query();
 
-        // Search by name or email
+        // Buscar por nombre o email
         if ($request->has('search')) {
             $search = $request->input('search');
             $query->where(function($q) use ($search) {
@@ -44,16 +46,16 @@ class DashboardController extends Controller
             });
         }
 
-        // Filter by role
+        // Filtrar por rol
         if ($request->has('role')) {
              if (!empty($request->input('role'))) {
                  $query->where('role', $request->input('role'));
              }
         }
 
-        // Filter by status
+        // Filtrar por estado
         if ($request->has('status') && $request->input('status') !== null) {
-            if (!empty($request->input('status')) || $request->input('status') === '0') { // Allow '0' for inactive
+            if (!empty($request->input('status')) || $request->input('status') === '0') { // Permitir '0' para inactivos
                  $query->where('is_active', $request->input('status'));
             }
         }
@@ -66,12 +68,12 @@ class DashboardController extends Controller
             ]);
         }
 
-        // Return the full view for non-AJAX requests
+        // Devolver la vista completa para solicitudes no AJAX
         return view('admin.users.index', compact('users'));
     }
 
     /**
-     * Show the form for editing the specified user.
+     * Muestra el formulario para editar el usuario especificado.
      *
      * @param  \App\Models\User  $user
      * @return \Illuminate\View\View|\Illuminate\Http\JsonResponse
@@ -89,13 +91,13 @@ class DashboardController extends Controller
             }
 
             if ($request->ajax()) {
-                // If it's an AJAX request, return only the form partial
+                // Si es una solicitud AJAX, devuelve solo la parte del formulario
                 return response()->json([
                     'html' => view('admin.users._edit_form', compact('user'))->render()
                 ]);
             }
 
-            // If it's a regular request, return the full page view
+            // Si es una solicitud normal, devuelve la vista de página completa
             return view('admin.users.edit', compact('user'));
         } catch (\Exception $e) {
             if ($request->ajax()) {
@@ -178,11 +180,11 @@ class DashboardController extends Controller
     }
 
     /**
-     * Delete an artwork from a user's profile.
+     * Elimina una obra de arte del perfil de un usuario.
      *
      * @param  \App\Models\User  $user
      * @param  \App\Models\Artwork  $artwork
-     * @return \Illuminate\Http\RedirectResponse
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
      */
     public function deleteUserArtwork(User $user, Artwork $artwork, Request $request)
     {
@@ -229,10 +231,10 @@ class DashboardController extends Controller
     }
 
     /**
-     * Delete a user's panoramic image.
+     * Elimina la imagen panorámica de un usuario.
      *
      * @param  \App\Models\User  $user
-     * @return \Illuminate\Http\JsonResponse
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
      */
     public function deletePanoramicImage(User $user, Request $request)
     {
@@ -253,7 +255,6 @@ class DashboardController extends Controller
                 Storage::disk('public')->delete($path);
             }
 
-            // Actualizar el usuario
             $user->update(['panoramic_image' => null]);
 
             if ($request->ajax()) {
@@ -277,71 +278,28 @@ class DashboardController extends Controller
     }
 
     /**
-     * Display a listing of exhibition requests.
+     * Muestra las solicitudes de exhibición.
      *
      * @return \Illuminate\View\View
      */
-    public function exhibitionRequests()
+    public function exhibitionRequests(): View
     {
-        // Obtener todas las solicitudes de exhibición pendientes de aprobación
-        $requests = ArtworkDisplayDate::with(['artwork', 'user'])
+        // Agrupar las solicitudes por usuario y fecha de exhibición
+        $requestsGrouped = ArtworkDisplayDate::with('artwork.user')
             ->where('is_approved', false)
-            ->orderBy('display_date', 'asc')
-            ->orderBy('created_at', 'asc')
-            ->get();
+            ->get()
+            ->groupBy(function ($date) {
+                return $date->user_id . '-' . $date->display_date->format('Y-m-d');
+            });
 
         // Log para depuración
-        \Log::info('Solicitudes encontradas:', [
-            'total' => $requests->count(),
-            'sample' => $requests->take(3)->map(function($req) {
-                return [
-                    'id' => $req->id,
-                    'user_id' => $req->user_id,
-                    'display_date' => $req->display_date,
-                    'is_approved' => $req->is_approved
-                ];
-            })->toArray()
-        ]);
-
-        // Agrupar las solicitudes
-        $requestsGrouped = $requests->groupBy(function($item) {
-            // Formatear la fecha en el mismo formato que se usa en el controlador
-            $date = \Carbon\Carbon::parse($item->display_date);
-            $groupKey = $item->user_id . '-' . $date->format('Y-m-d');
-            
-            \Log::info('Creando groupKey:', [
-                'user_id' => $item->user_id,
-                'display_date' => $item->display_date,
-                'formatted_date' => $date->format('Y-m-d'),
-                'groupKey' => $groupKey
-            ]);
-            
-            return $groupKey;
-        });
-
-        // Debug information
-        \Log::info('Información de agrupación:', [
-            'total_groups' => $requestsGrouped->count(),
-            'group_keys' => $requestsGrouped->keys()->toArray(),
-            'sample_group' => $requestsGrouped->first() ? [
-                'key' => $requestsGrouped->keys()->first(),
-                'count' => $requestsGrouped->first()->count(),
-                'items' => $requestsGrouped->first()->map(function($req) {
-                    return [
-                        'id' => $req->id,
-                        'user_id' => $req->user_id,
-                        'display_date' => $req->display_date,
-                        'is_approved' => $req->is_approved
-                    ];
-                })->toArray()
-            ] : null
-        ]);
+        Log::info('Solicitudes de exhibición agrupadas', ['count' => $requestsGrouped->count(), 'keys' => $requestsGrouped->keys()->all()]);
 
         return view('admin.exhibition-requests.index', compact('requestsGrouped'));
     }
 
     /**
-     * Approve an exhibition request.
+     * Aprueba una solicitud de exhibición específica.
      *
      * @param  int  $id
      * @return \Illuminate\Http\JsonResponse
@@ -349,23 +307,23 @@ class DashboardController extends Controller
     public function approveRequest($id)
     {
         try {
-            $request = ArtworkDisplayDate::findOrFail($id);
-            $request->update(['is_approved' => true]);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Solicitud aprobada correctamente'
-            ]);
+            $displayDate = ArtworkDisplayDate::findOrFail($id);
+            $displayDate->update(['is_approved' => true]);
+            return response()->json(['message' => 'Solicitud aprobada correctamente.']);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al aprobar la solicitud: ' . $e->getMessage()
-            ], 500);
+            Log::error('Error al aprobar la solicitud:', [
+                'request_id' => $id,
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json(['error' => 'Error al aprobar la solicitud: ' . $e->getMessage()], 500);
         }
     }
 
     /**
-     * Reject an exhibition request.
+     * Rechaza una solicitud de exhibición específica.
      *
      * @param  int  $id
      * @return \Illuminate\Http\JsonResponse
@@ -373,215 +331,135 @@ class DashboardController extends Controller
     public function rejectRequest($id)
     {
         try {
-            $request = ArtworkDisplayDate::findOrFail($id);
-            $request->delete();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Solicitud rechazada correctamente'
-            ]);
+            $displayDate = ArtworkDisplayDate::findOrFail($id);
+            $displayDate->delete(); // Eliminar la solicitud al rechazarla
+            return response()->json(['message' => 'Solicitud rechazada correctamente.']);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al rechazar la solicitud: ' . $e->getMessage()
-            ], 500);
+            Log::error('Error al rechazar la solicitud:', [
+                'request_id' => $id,
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json(['error' => 'Error al rechazar la solicitud: ' . $e->getMessage()], 500);
         }
     }
 
     /**
-     * Approve a batch of exhibition requests.
+     * Aprueba un lote de solicitudes de exhibición para un usuario y fecha específicos.
      *
-     * @param  string  $groupKey  Formatted as 'userId-displayDate'
+     * @param  int  $userId
+     * @param  string  $date
      * @return \Illuminate\Http\JsonResponse
      */
     public function approveBatch($userId, $date)
     {
         try {
-            // Convertir la fecha al formato correcto
-            $date = \Carbon\Carbon::parse($date)->startOfDay();
-            
-            // Log para depuración
-            \Log::info('Aprobando solicitudes:', [
-                'userId' => $userId,
-                'date' => $date->toDateTimeString()
-            ]);
+            $parsedDate = Carbon::parse($date)->format('Y-m-d');
 
-            // Primero, verificar si existen las solicitudes
-            $existingRequests = ArtworkDisplayDate::where('user_id', $userId)
-                ->where('is_approved', false)
-                ->get();
+            // Asegurarse de que no hay exhibiciones aprobadas para esta fecha
+            $existingApproved = ArtworkDisplayDate::where('display_date', $parsedDate)
+                ->where('is_approved', true)
+                ->exists();
 
-            \Log::info('Solicitudes existentes:', [
-                'count' => $existingRequests->count(),
-                'requests' => $existingRequests->map(function($req) {
-                    return [
-                        'id' => $req->id,
-                        'user_id' => $req->user_id,
-                        'display_date' => $req->display_date,
-                        'is_approved' => $req->is_approved
-                    ];
-                })->toArray()
-            ]);
-            
-            // Encontrar todas las solicitudes pendientes para este usuario y fecha
-            $requestsToApprove = ArtworkDisplayDate::where('user_id', $userId)
-                ->whereRaw('DATE(display_date) = ?', [$date->format('Y-m-d')])
-                ->where('is_approved', false)
-                ->get();
-
-            \Log::info('Solicitudes a aprobar:', [
-                'count' => $requestsToApprove->count(),
-                'sql' => ArtworkDisplayDate::where('user_id', $userId)
-                    ->whereRaw('DATE(display_date) = ?', [$date->format('Y-m-d')])
-                    ->where('is_approved', false)
-                    ->toSql()
-            ]);
-
-            if ($requestsToApprove->isEmpty()) {
-                \Log::warning('No se encontraron solicitudes pendientes para el lote');
+            if ($existingApproved) {
+                Log::warning('Ya existe una exhibición aprobada para esta fecha al intentar aprobar un lote.', ['user_id' => $userId, 'date' => $date]);
                 return response()->json([
-                    'success' => false,
-                    'message' => 'No se encontraron solicitudes pendientes para este lote.'
-                ], 404);
+                    'message' => 'Ya existe una exhibición aprobada para esta fecha.'
+                ], 409); // Conflicto
             }
 
-            // Actualizar todas las solicitudes a aprobadas
-            foreach ($requestsToApprove as $request) {
-                $request->update(['is_approved' => true]);
-                \Log::info('Solicitud actualizada:', [
-                    'id' => $request->id,
-                    'user_id' => $request->user_id,
-                    'display_date' => $request->display_date
-                ]);
-            }
+            // Actualizar todas las solicitudes pendientes para ese usuario y fecha a aprobadas
+            ArtworkDisplayDate::where('user_id', $userId)
+                ->where('display_date', $parsedDate)
+                ->where('is_approved', false)
+                ->update(['is_approved' => true]);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Lote de solicitudes aprobado correctamente'
-            ]);
+            Log::info('Lote de solicitudes aprobado correctamente.', ['user_id' => $userId, 'date' => $date]);
+            return response()->json(['message' => 'Lote de solicitudes aprobado correctamente.']);
         } catch (\Exception $e) {
-            \Log::error('Error en approveBatch: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
-            
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al aprobar el lote de solicitudes: ' . $e->getMessage(),
-                'debug_info' => [
-                    'userId' => $userId,
-                    'date' => $date->toDateTimeString() ?? null,
-                    'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
-                ]
-            ], 500);
+            Log::error('Error al aprobar el lote de solicitudes:', [
+                'user_id' => $userId,
+                'date' => $date,
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json(['error' => 'Error al aprobar el lote de solicitudes: ' . $e->getMessage()], 500);
         }
     }
 
     /**
-     * Reject a batch of exhibition requests.
+     * Rechaza un lote de solicitudes de exhibición para un usuario y fecha específicos.
      *
-     * @param  string  $groupKey  Formatted as 'userId-displayDate'
+     * @param  int  $userId
+     * @param  string  $date
      * @return \Illuminate\Http\JsonResponse
      */
     public function rejectBatch($userId, $date)
     {
         try {
-            // Convertir la fecha al formato correcto
-            $date = \Carbon\Carbon::parse($date)->startOfDay();
-            
-            // Encontrar y eliminar todas las solicitudes pendientes para este usuario y fecha
-            $deletedCount = ArtworkDisplayDate::where('user_id', $userId)
-                ->whereRaw('DATE(display_date) = ?', [$date->format('Y-m-d')])
+            $parsedDate = Carbon::parse($date)->format('Y-m-d');
+
+            // Eliminar todas las solicitudes pendientes para ese usuario y fecha
+            ArtworkDisplayDate::where('user_id', $userId)
+                ->where('display_date', $parsedDate)
                 ->where('is_approved', false)
                 ->delete();
 
-            if ($deletedCount === 0) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'No se encontraron solicitudes pendientes para este lote para rechazar.'
-                ], 404);
-            }
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Lote de solicitudes rechazado correctamente'
-            ]);
+            Log::info('Lote de solicitudes rechazado correctamente.', ['user_id' => $userId, 'date' => $date]);
+            return response()->json(['message' => 'Lote de solicitudes rechazado correctamente.']);
         } catch (\Exception $e) {
-            \Log::error('Error en rejectBatch: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
-            
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al rechazar el lote de solicitudes: ' . $e->getMessage(),
-                'debug_info' => [
-                    'userId' => $userId,
-                    'date' => $date->toDateTimeString() ?? null,
-                    'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
-                ]
-            ], 500);
+            Log::error('Error al rechazar el lote de solicitudes:', [
+                'user_id' => $userId,
+                'date' => $date,
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json(['error' => 'Error al rechazar el lote de solicitudes: ' . $e->getMessage()], 500);
         }
     }
 
     /**
-     * Get artworks for a specific group.
+     * Obtiene las obras de arte para un grupo específico de solicitudes de exhibición.
      *
-     * @param  string  $groupKey  Formatted as 'userId-displayDate'
+     * @param  string  $groupKey  La clave del grupo (user_id-YYYY-MM-DD).
      * @return \Illuminate\Http\JsonResponse
      */
     public function getGroupArtworks($groupKey)
     {
-        \Log::info('Iniciando getGroupArtworks con groupKey: ' . $groupKey);
-
-        // Validar que el groupKey tenga el formato esperado (por ejemplo, "userId-YYYY-MM-DD")
-        if (!preg_match('/^\d+-\d{4}-\d{2}-\d{2}(?:\s.*)?$/', $groupKey)) {
-            \Log::warning('getGroupArtworks: groupKey con formato inválido: "' . $groupKey . '"');
-            return response()->json([
-                'success' => false,
-                'message' => 'El identificador de grupo ("groupKey") no tiene el formato esperado (debe ser "userId-YYYY-MM-DD").'
-            ], 400);
-        }
-
         try {
-            // Extraer userId y displayDate del groupKey
-            $parts = explode('-', $groupKey);
-            $userId = $parts[0];
-            // Reconstruir la fecha (asumiendo que el formato es "userId-YYYY-MM-DD")
-            $displayDate = $parts[1] . '-' . $parts[2] . '-' . explode(' ', $parts[3])[0];
-            
-            \Log::info('userId: ' . $userId . ', displayDate: ' . $displayDate);
+            list($userId, $date) = explode('-', $groupKey);
+            $parsedDate = Carbon::parse($date)->format('Y-m-d');
 
-            $artworks = ArtworkDisplayDate::with(['artwork'])
-                ->where('user_id', $userId)
-                ->whereDate('display_date', $displayDate)
-                ->where('is_approved', false)
+            $artworks = ArtworkDisplayDate::where('user_id', $userId)
+                ->where('display_date', $parsedDate)
+                ->with('artwork')
                 ->get()
-                ->map(function($request) {
-                    $imagePath = $request->artwork->image_path;
-                    $fullImagePath = $imagePath ? asset('storage/' . $imagePath) : asset('img/placeholder.jpg');
-                    
-                    \Log::info('Procesando obra: ' . $request->artwork->id . ' con imagen: ' . $fullImagePath);
-
+                ->map(function ($displayDate) {
                     return [
-                        'id' => $request->artwork->id,
-                        'title' => $request->artwork->title,
-                        'technique' => $request->artwork->technique,
-                        'image_path' => $fullImagePath
+                        'id' => $displayDate->artwork->id,
+                        'title' => $displayDate->artwork->title,
+                        'image_url' => $displayDate->artwork->image_path ? asset('storage/' . $displayDate->artwork->image_path) : asset('img/placeholder.jpg'),
+                        'display_date_id' => $displayDate->id // ID de la solicitud de exhibición
                     ];
                 });
 
-            \Log::info('Número de obras encontradas: ' . $artworks->count());
-
-            return response()->json([
-                'success' => true,
-                'artworks' => $artworks
-            ]);
+            Log::info('Obras de arte del grupo obtenidas correctamente.', ['groupKey' => $groupKey, 'count' => $artworks->count()]);
+            return response()->json($artworks);
         } catch (\Exception $e) {
-            \Log::error('Error en getGroupArtworks: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al obtener las obras: ' . $e->getMessage()
-            ], 500);
+            Log::error('Error al obtener obras de arte del grupo:', [
+                'groupKey' => $groupKey,
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json(['error' => 'Error al obtener obras de arte del grupo: ' . $e->getMessage()], 500);
         }
     }
 } 

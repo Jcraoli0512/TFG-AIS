@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Artwork;
 use App\Models\ArtworkDisplayDate;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -123,10 +124,11 @@ class ArtworkDisplayDateController extends Controller
     {
         Log::info('ArtworkDisplayDateController@approve: Inicio', ['requestId' => $displayDate->id]);
 
+        /** @var \App\Models\User $user */
         $user = Auth::user();
         if (!$user) {
             Log::warning('ArtworkDisplayDateController@approve: Usuario no autenticado');
-            return response()->json(['error' => 'Usuario no autenticado.'], 401); // Unauthenticated
+            return response()->json(['error' => 'Usuario no autenticado.'], 401); // No autenticado
         }
         Log::info('ArtworkDisplayDateController@approve: Usuario autenticado', ['userId' => $user->id, 'isAdmin' => $user->isAdmin()]);
 
@@ -155,13 +157,14 @@ class ArtworkDisplayDateController extends Controller
     }
 
     /**
-     * Cancel an approved exhibition display date by the user.
+     * Cancela una fecha de exhibición de obra aprobada por el usuario.
      *
      * @param  \App\Models\ArtworkDisplayDate  $displayDate
      * @return \Illuminate\Http\JsonResponse
      */
     public function cancel(ArtworkDisplayDate $displayDate)
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
         // Verificar que el usuario es el propietario de la fecha de exhibición o es administrador
@@ -178,7 +181,7 @@ class ArtworkDisplayDateController extends Controller
             $displayDate->delete();
             return response()->json(['message' => 'Fecha de exhibición cancelada correctamente.']);
         } catch (\Exception $e) {
-            Log::error('Error cancelling artwork display date:', [
+            Log::error('Error al cancelar la fecha de exhibición de obra:', [
                 'displayDateId' => $displayDate->id,
                 'message' => $e->getMessage(),
                 'file' => $e->getFile(),
@@ -193,6 +196,7 @@ class ArtworkDisplayDateController extends Controller
     {
         Log::info('ArtworkDisplayDateController@cancelAll: Inicio', ['date' => $date]);
         
+        /** @var \App\Models\User $user */
         $user = Auth::user();
         
         try {
@@ -228,15 +232,14 @@ class ArtworkDisplayDateController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Error cancelling all artwork display dates:', [
+            Log::error('Error al cancelar todas las fechas de exhibición de obras:', [
                 'date' => $date,
                 'message' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            return response()->json([
-                'error' => 'Ha ocurrido un error al cancelar las exhibiciones.'
+            return response()->json(['error' => 'Ha ocurrido un error al cancelar las exhibiciones.'
             ], 500);
         }
     }

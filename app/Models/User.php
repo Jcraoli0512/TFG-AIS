@@ -15,7 +15,7 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     /**
-     * The attributes that are mass assignable.
+     * Los atributos que son asignables masivamente.
      *
      * @var list<string>
      */
@@ -44,7 +44,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * Los atributos que deben ocultarse para la serialización.
      *
      * @var list<string>
      */
@@ -54,7 +54,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * Obtener los atributos que deben ser convertidos.
      *
      * @return array<string, string>
      */

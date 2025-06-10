@@ -1,10 +1,11 @@
-<form id="editUserForm" action="{{ route('admin.users.update', $user) }}" method="POST" class="space-y-4">
+<form id="editUserForm" action="{{ route('admin.users.update', $user) }}" method="POST" class="space-y-6">
     @csrf
     @method('PUT')
 
     {{-- Información del usuario --}}
-    <div class="bg-gray-50 p-4 rounded-lg mb-6">
-        <div class="grid grid-cols-2 gap-4 text-sm text-gray-600">
+    <div class="bg-gray-50 p-4 rounded-lg">
+        <h4 class="text-md font-semibold text-gray-900 mb-3">Información del Usuario</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
             <div>
                 <p class="font-medium">Fecha de registro:</p>
                 <p>{{ $user->created_at->format('d/m/Y H:i') }}</p>
@@ -16,65 +17,68 @@
         </div>
     </div>
 
-    {{-- Campos del formulario --}}
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="mb-4">
-            <label for="name" class="block text-sm font-medium text-gray-700">Nombre</label>
-            <input type="text" name="name" id="name" value="{{ old('name', $user->name) }}" 
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-            @error('name')
-                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-            @enderror
-        </div>
-
-        <div class="mb-4">
-            <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-            <input type="email" name="email" id="email" value="{{ old('email', $user->email) }}"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-            @error('email')
-                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-            @enderror
-        </div>
-
-        <div class="mb-4">
-            <label for="role" class="block text-sm font-medium text-gray-700">Rol</label>
-            <select name="role" id="role" 
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                <option value="artist" {{ old('role', $user->role) === 'artist' ? 'selected' : '' }}>Artista</option>
-                <option value="admin" {{ old('role', $user->role) === 'admin' ? 'selected' : '' }}>Administrador</option>
-            </select>
-            @error('role')
-                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-            @enderror
-        </div>
-
-        <div class="mb-4">
-            <label for="is_active" class="block text-sm font-medium text-gray-700">Estado</label>
-            <select name="is_active" id="is_active" 
+    {{-- Información Básica --}}
+    <div class="border-b border-gray-200 pb-6">
+        <h4 class="text-md font-semibold text-gray-900 mb-4">Información Básica</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label for="name" class="block text-sm font-medium text-gray-700">Nombre</label>
+                <input type="text" name="name" id="name" value="{{ old('name', $user->name) }}" 
                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                <option value="1" {{ old('is_active', $user->is_active) ? 'selected' : '' }}>Activo</option>
-                <option value="0" {{ old('is_active', $user->is_active) ? '' : 'selected' }}>Inactivo</option>
-            </select>
-            @error('is_active')
+                @error('name')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                <input type="email" name="email" id="email" value="{{ old('email', $user->email) }}"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                @error('email')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div>
+                <label for="role" class="block text-sm font-medium text-gray-700">Rol</label>
+                <select name="role" id="role" 
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    <option value="artist" {{ old('role', $user->role) === 'artist' ? 'selected' : '' }}>Artista</option>
+                    <option value="admin" {{ old('role', $user->role) === 'admin' ? 'selected' : '' }}>Administrador</option>
+                </select>
+                @error('role')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div>
+                <label for="is_active" class="block text-sm font-medium text-gray-700">Estado</label>
+                <select name="is_active" id="is_active" 
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    <option value="1" {{ old('is_active', $user->is_active) ? 'selected' : '' }}>Activo</option>
+                    <option value="0" {{ old('is_active', $user->is_active) ? '' : 'selected' }}>Inactivo</option>
+                </select>
+                @error('is_active')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <label for="biography" class="block text-sm font-medium text-gray-700">Descripción / Biografía</label>
+            <textarea name="biography" id="biography" rows="4" 
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">{{ old('biography', $user->biography) }}</textarea>
+            @error('biography')
                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
             @enderror
         </div>
-    </div>
-
-    {{-- Campo de descripción --}}
-    <div class="mb-4">
-        <label for="biography" class="block text-sm font-medium text-gray-700">Descripción / Biografía</label>
-        <textarea name="biography" id="biography" rows="4" 
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">{{ old('biography', $user->biography) }}</textarea>
-        @error('biography')
-            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-        @enderror
     </div>
 
     {{-- Redes Sociales --}}
-    <div class="mb-4">
+    <div class="border-b border-gray-200 pb-6">
         <h4 class="text-md font-semibold text-gray-900 mb-3">Redes Sociales</h4>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <p class="text-sm text-gray-600 mb-4">Enlaces donde el usuario muestra su arte</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label for="instagram" class="block text-sm font-medium text-gray-700">Instagram</label>
                 <input type="url" name="instagram" id="instagram" value="{{ old('instagram', $user->instagram) }}" placeholder="https://instagram.com/usuario" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
@@ -121,8 +125,8 @@
     </div>
 
     {{-- Sección de Imagen Panorámica --}}
-    <div class="mt-8">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">Imagen Panorámica</h3>
+    <div class="border-b border-gray-200 pb-6">
+        <h4 class="text-md font-semibold text-gray-900 mb-4">Imagen Panorámica</h4>
         <div class="relative">
             @if($user->panoramic_image)
                 <div class="relative group">
@@ -145,8 +149,8 @@
 
     {{-- Sección de Obras del Usuario --}}
     @if($user->artworks->count() > 0)
-    <div class="mt-8">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">Obras del Usuario</h3>
+    <div class="pb-6">
+        <h4 class="text-md font-semibold text-gray-900 mb-4">Obras del Usuario ({{ $user->artworks->count() }})</h4>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             @foreach($user->artworks as $artwork)
             <div class="relative group">
@@ -154,8 +158,8 @@
                      alt="{{ $artwork->title }}" 
                      class="w-full h-48 object-cover rounded-lg">
                 <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex flex-col items-center justify-center p-4">
-                    <h4 class="text-white font-medium mb-2">{{ $artwork->title }}</h4>
-                    <p class="text-white text-sm mb-2">{{ $artwork->technique }} - {{ $artwork->year }}</p>
+                    <h5 class="text-white font-medium mb-2 text-center">{{ $artwork->title }}</h5>
+                    <p class="text-white text-sm mb-2 text-center">{{ $artwork->technique }} - {{ $artwork->year }}</p>
                     <button type="button" 
                             onclick="handleDeleteArtwork({{ $user->id }}, {{ $artwork->id }})"
                             class="text-white bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md text-sm">
@@ -168,7 +172,8 @@
     </div>
     @endif
 
-    <div class="flex justify-end space-x-3 pt-4">
+    {{-- Botones de acción --}}
+    <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
         <button type="button" onclick="closeEditModal()" 
                 class="inline-flex items-center px-4 py-2 bg-gray-200 border border-transparent rounded-md font-semibold text-xs text-gray-800 uppercase tracking-widest hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
             Cancelar

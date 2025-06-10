@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Log;
 class ArtworkController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Mostrar un listado del recurso.
      */
     public function index()
     {
@@ -21,7 +21,7 @@ class ArtworkController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Mostrar el formulario para crear un nuevo recurso.
      */
     public function create(Request $request)
     {
@@ -29,12 +29,12 @@ class ArtworkController extends Controller
             return view('artworks._create_form')->render();
         }
 
-        // Fallback for non-AJAX request (optional, can redirect or show full page)
+        // Fallback para solicitudes no AJAX (opcional, puede redirigir o mostrar página completa)
         // return view('artworks.create');
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Almacenar un recurso recién creado en el almacenamiento.
      */
     public function store(Request $request)
     {
@@ -43,7 +43,7 @@ class ArtworkController extends Controller
             'description' => 'nullable|string',
             'technique' => 'nullable|string|max:255',
             'year' => 'nullable|integer|min:1900|max:' . date('Y'),
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // max 2MB
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // máximo 2MB
             'collection_id' => 'nullable|exists:collections,id'
         ]);
 
@@ -76,14 +76,14 @@ class ArtworkController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Mostrar el recurso especificado.
      */
     public function show(Artwork $artwork)
     {
         // Generar URL de imagen que funcione para todos los usuarios
         $imageUrl = null;
         if ($artwork->image_path) {
-            // Usar asset() para generar URL pública que funcione para guests
+            // Usar asset() para generar URL pública que funcione para invitados
             $imageUrl = asset('storage/' . $artwork->image_path);
         }
 
@@ -98,7 +98,7 @@ class ArtworkController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Mostrar el formulario para editar el recurso especificado.
      */
     public function edit(string $id)
     {
@@ -106,7 +106,7 @@ class ArtworkController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Actualizar el recurso especificado en el almacenamiento.
      */
     public function update(Request $request, Artwork $artwork)
     {
@@ -131,7 +131,7 @@ class ArtworkController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Eliminar el recurso especificado del almacenamiento.
      */
     public function destroy(Artwork $artwork)
     {
@@ -160,7 +160,7 @@ class ArtworkController extends Controller
         $user = Auth::user();
             if (!$user) {
                 Log::error('ArtworkController@getArtworkSelectionPartial: Usuario no autenticado');
-                return response()->json(['message' => 'Usuario no autenticado.'], 401); // Unauthenticated
+                return response()->json(['message' => 'Usuario no autenticado.'], 401); // No autenticado
             }
         $artworks = $user->artworks;
         Log::info('ArtworkController@getArtworkSelectionPartial: Obras encontradas para el usuario', ['user_id' => $user->id, 'count' => $artworks->count()]);
@@ -185,7 +185,7 @@ class ArtworkController extends Controller
     }
 
     /**
-     * Display a gallery of random artworks.
+     * Mostrar una galería de obras de arte aleatorias.
      *
      * @return \Illuminate\View\View
      */
@@ -199,7 +199,7 @@ class ArtworkController extends Controller
     }
 
     /**
-     * Get a random selection of artworks.
+     * Obtener una selección aleatoria de obras de arte.
      *
      * @return \Illuminate\Http\JsonResponse
      */

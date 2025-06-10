@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
 class UserController extends Controller
 {
     /**
-     * Display a listing of the artists with search functionality.
+     * Mostrar un listado de artistas con funcionalidad de búsqueda.
      */
     public function indexArtists(Request $request)
     {
@@ -41,7 +41,7 @@ class UserController extends Controller
     }
 
     /**
-     * Display the specified artist and their artworks for API request.
+     * Mostrar el artista especificado y sus obras de arte para solicitudes de API.
      */
     public function showArtist(User $artist): JsonResponse
     {
@@ -63,7 +63,7 @@ class UserController extends Controller
         });
 
         // Añadir información de depuración
-        Log::info('Artist data being sent:', [
+        Log::info('Datos del artista siendo enviados:', [
             'artist_id' => $artist->id,
             'name' => $artist->name,
             'has_photo' => !empty($artist->profile_photo_url),
