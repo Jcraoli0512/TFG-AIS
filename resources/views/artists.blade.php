@@ -7,8 +7,8 @@
         <h1 class="text-4xl font-bold text-center text-gray-800 mb-10">Descubre a nuestros artistas</h1>
 
         <div class="max-w-xl mx-auto mb-10">
-            <form action="{{ route('artists.index') }}" method="GET" class="flex">
-                <input type="text" name="search" placeholder="Buscar artistas por nombre..." 
+            <form id="searchForm" class="flex">
+                <input type="text" name="search" id="searchInput" placeholder="Buscar artistas por nombre..." 
                        value="{{ request('search') }}"
                        class="flex-grow px-4 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-700">
                 <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-r-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
@@ -31,8 +31,8 @@
             @endforelse
         </div>
 
-        {{-- Puedes añadir aquí enlaces de paginación si usas paginate() en el controlador --}}
-        <div class="mt-10">
+        {{-- Paginación --}}
+        <div id="pagination-container" class="mt-10">
             {{ $artists->links() }}
         </div>
     </div>
@@ -58,7 +58,7 @@
                         @auth
                             <a id="modalArtistProfileLink" href="#" class="text-indigo-600 hover:text-indigo-800 font-semibold transition-colors duration-200">Ver perfil completo</a>
                         @else
-                            <a href="{{ route('login') }}" class="text-indigo-600 hover:text-indigo-800 font-semibold transition-colors duration-200">Iniciar sesión para ver perfil</a>
+                            <a id="modalArtistLoginLink" href="{{ route('login') }}" class="text-indigo-600 hover:text-indigo-800 font-semibold transition-colors duration-200">Iniciar sesión para ver perfil</a>
                         @endauth
                     </p>
                 </div>
@@ -92,6 +92,98 @@
     <script>
         const artistModal = document.getElementById('artistModal');
         let artistArtworksSwiper = null; // Variable para almacenar la instancia de Swiper
+        let searchTimeout = null; // Para debounce de la búsqueda
+
+        // Función para búsqueda asíncrona
+        async function searchArtists(searchTerm = '') {
+            try {
+                const formData = new FormData();
+                if (searchTerm) {
+                    formData.append('search', searchTerm);
+                }
+
+                const response = await fetch('{{ route("artists.index") }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error en la búsqueda');
+                }
+
+                const data = await response.json();
+                
+                // Actualizar la grilla de artistas
+                document.getElementById('artists-grid').innerHTML = data.artists;
+                
+                // Actualizar la paginación
+                document.getElementById('pagination-container').innerHTML = data.pagination;
+                
+                // Actualizar la URL sin recargar la página
+                const url = new URL(window.location);
+                if (searchTerm) {
+                    url.searchParams.set('search', searchTerm);
+                } else {
+                    url.searchParams.delete('search');
+                }
+                window.history.pushState({}, '', url);
+
+            } catch (error) {
+                console.error('Error en la búsqueda:', error);
+            }
+        }
+
+        // Manejar el envío del formulario
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const searchTerm = document.getElementById('searchInput').value.trim();
+            searchArtists(searchTerm);
+        });
+
+        // Búsqueda en tiempo real con debounce
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.trim();
+            
+            // Limpiar el timeout anterior
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+            
+            // Establecer un nuevo timeout para evitar demasiadas peticiones
+            searchTimeout = setTimeout(() => {
+                searchArtists(searchTerm);
+            }, 500); // Esperar 500ms después de que el usuario deje de escribir
+        });
+
+        // Manejar la paginación asíncrona
+        document.addEventListener('click', function(e) {
+            if (e.target.matches('.pagination a')) {
+                e.preventDefault();
+                const href = e.target.getAttribute('href');
+                const url = new URL(href);
+                const searchTerm = url.searchParams.get('search') || '';
+                
+                // Hacer la petición AJAX para la página
+                fetch(href, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('artists-grid').innerHTML = data.artists;
+                    document.getElementById('pagination-container').innerHTML = data.pagination;
+                    window.history.pushState({}, '', href);
+                })
+                .catch(error => {
+                    console.error('Error en la paginación:', error);
+                });
+            }
+        });
 
         async function openArtistModal(artistId) {
             console.log('Opening modal for artist:', artistId); // Debug log
@@ -130,6 +222,13 @@
                 const profileLink = document.getElementById('modalArtistProfileLink');
                 if (profileLink) {
                     profileLink.href = `${baseUrl}/profile/${data.id}`;
+                }
+
+                // Actualizar el enlace de login para usuarios no autenticados
+                const loginLink = document.getElementById('modalArtistLoginLink');
+                if (loginLink) {
+                    const redirectUrl = `${baseUrl}/profile/${data.id}`;
+                    loginLink.href = `${baseUrl}/login?redirect=${encodeURIComponent(redirectUrl)}`;
                 }
 
                 // Limpiar carrusel anterior

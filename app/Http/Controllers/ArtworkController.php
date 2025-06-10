@@ -80,12 +80,19 @@ class ArtworkController extends Controller
      */
     public function show(Artwork $artwork)
     {
+        // Generar URL de imagen que funcione para todos los usuarios
+        $imageUrl = null;
+        if ($artwork->image_path) {
+            // Usar asset() para generar URL pública que funcione para guests
+            $imageUrl = asset('storage/' . $artwork->image_path);
+        }
+
         return response()->json([
             'title' => $artwork->title,
             'description' => $artwork->description,
             'technique' => $artwork->technique,
             'year' => $artwork->year,
-            'image_url' => Storage::url($artwork->image_path),
+            'image_url' => $imageUrl,
             'is_owner' => Auth::check() && Auth::id() === $artwork->user_id
         ]);
     }

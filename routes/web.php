@@ -66,6 +66,7 @@ Route::get('/gallery', [ArtworkController::class, 'indexGallery'])->name('galler
 
 // Página de Artistas (accesible para todos, con búsqueda)
 Route::get('/artists', [UserController::class, 'indexArtists'])->name('artists.index');
+Route::post('/artists', [UserController::class, 'indexArtists'])->name('artists.search');
 
 // Calendario
 Route::get('/calendar', [CalendarController::class, 'index'])->middleware(['auth'])->name('calendar');
@@ -88,8 +89,11 @@ Route::middleware(['auth'])->group(function () {
 // Nueva ruta para obtener la vista parcial de selección de obras
 Route::get('/artworks/selection-partial', [ArtworkController::class, 'getArtworkSelectionPartial'])->middleware(['auth'])->name('artworks.selection-partial');
 
-// Rutas para la gestión de obras (CRUD)
-Route::resource('artworks', ArtworkController::class)->middleware(['auth']);
+// Ruta pública para ver detalles de una obra (sin autenticación)
+Route::get('/artworks/{artwork}', [ArtworkController::class, 'show'])->name('artworks.show.public');
+
+// Rutas para la gestión de obras (CRUD) - requiere autenticación
+Route::resource('artworks', ArtworkController::class)->middleware(['auth'])->except(['show']);
 
 // Exhibición 3D
 Route::get('/exhibicion', function () {

@@ -28,6 +28,20 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Verificar si hay una URL de redirección específica
+        if ($request->has('redirect')) {
+            $redirectUrl = $request->input('redirect');
+            // Validar que la URL es interna y segura
+            if (filter_var($redirectUrl, FILTER_VALIDATE_URL)) {
+                $redirectHost = parse_url($redirectUrl, PHP_URL_HOST);
+                $appHost = parse_url(config('app.url'), PHP_URL_HOST);
+                
+                if ($redirectHost === $appHost || $redirectHost === '127.0.0.1' || $redirectHost === 'localhost') {
+                    return redirect($redirectUrl);
+                }
+            }
+        }
+
         return redirect()->intended(route('home', absolute: false));
     }
 

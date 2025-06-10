@@ -13,7 +13,7 @@ class UserController extends Controller
     /**
      * Display a listing of the artists with search functionality.
      */
-    public function indexArtists(Request $request): View
+    public function indexArtists(Request $request)
     {
         $query = User::where('role', 'artist'); // Filtrar solo por artistas
 
@@ -23,6 +23,19 @@ class UserController extends Controller
 
         // Cargar la biografía para mostrar un fragmento en la tarjeta y las obras para la modal
         $artists = $query->with('artworks')->withCount('artworks')->paginate(12); // Paginación y cargar obras para la modal
+
+        // Si es una petición AJAX, devolver JSON
+        if ($request->ajax()) {
+            $artistsHtml = view('artists._artists_grid', compact('artists'))->render();
+            $paginationHtml = $artists->links()->toHtml();
+            
+            return response()->json([
+                'artists' => $artistsHtml,
+                'pagination' => $paginationHtml,
+                'total' => $artists->total(),
+                'current_page' => $artists->currentPage()
+            ]);
+        }
 
         return view('artists', compact('artists'));
     }
@@ -50,7 +63,7 @@ class UserController extends Controller
         });
 
         // Añadir información de depuración
-        \Log::info('Artist data being sent:', [
+        Log::info('Artist data being sent:', [
             'artist_id' => $artist->id,
             'name' => $artist->name,
             'has_photo' => !empty($artist->profile_photo_url),
