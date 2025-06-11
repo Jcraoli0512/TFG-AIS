@@ -510,13 +510,17 @@ class DashboardController extends Controller
                     return [
                         'id' => $displayDate->artwork->id,
                         'title' => $displayDate->artwork->title,
-                        'image_url' => $displayDate->artwork->image_path ? asset('storage/' . $displayDate->artwork->image_path) : asset('img/placeholder.jpg'),
+                        'image_path' => $displayDate->artwork->image_path ? asset('storage/' . $displayDate->artwork->image_path) : asset('img/placeholder.jpg'),
+                        'technique' => $displayDate->artwork->technique,
                         'display_date_id' => $displayDate->id // ID de la solicitud de exhibición
                     ];
                 });
 
             Log::info('Obras de arte del grupo obtenidas correctamente.', ['groupKey' => $groupKey, 'count' => $artworks->count()]);
-            return response()->json($artworks);
+            return response()->json([
+                'success' => true,
+                'artworks' => $artworks
+            ]);
         } catch (\Exception $e) {
             Log::error('Error al obtener obras de arte del grupo:', [
                 'groupKey' => $groupKey,
@@ -525,7 +529,10 @@ class DashboardController extends Controller
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            return response()->json(['error' => 'Error al obtener obras de arte del grupo: ' . $e->getMessage()], 500);
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener obras de arte del grupo: ' . $e->getMessage()
+            ], 500);
         }
     }
 } 
